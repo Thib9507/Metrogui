@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MétroChain V2 — Quiz du métro parisien</title>
+<style>
+:root{
+  --bg:#07111f;--panel:#101c2f;--panel2:#15253c;--soft:#1d304b;--text:#f7f9fc;
+  --muted:#96a8c1;--border:rgba(255,255,255,.09);--good:#35d69a;--bad:#fb7185;
+  --warn:#fbbf24;--blue:#60a5fa;--shadow:0 18px 70px rgba(0,0,0,.3)
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);
+background:radial-gradient(circle at 10% 0%,rgba(91,99,255,.15),transparent 32%),radial-gradient(circle at 100% 30%,rgba(255,205,0,.08),transparent 25%),var(--bg)}
+button,input,select{font:inherit}.hidden{display:none!important}button{cursor:pointer}
+.app{max-width:1260px;margin:auto;padding:22px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:16px;background:white;color:#10203a;display:grid;place-items:center;font-size:23px;font-weight:1000;box-shadow:var(--shadow)}
+.brand h1{margin:0;font-size:22px;letter-spacing:-.04em}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--border);background:var(--panel2);color:white;padding:10px 13px;border-radius:12px;font-weight:850}.btn:hover{filter:brightness(1.12)}.btn.ghost{background:transparent}.btn.bad{color:#fecdd3}
+.card{background:linear-gradient(180deg,rgba(20,36,59,.97),rgba(13,25,43,.97));border:1px solid var(--border);border-radius:21px;box-shadow:var(--shadow)}
+.hero{display:grid;grid-template-columns:1.45fr .55fr;gap:16px}.hero-main{padding:28px;position:relative;overflow:hidden}.hero-main:after{content:"M";position:absolute;right:-10px;bottom:-65px;font-size:210px;font-weight:1000;color:rgba(255,255,255,.035)}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:#a9bbd3;font-weight:950}.hero h2{font-size:38px;line-height:1.05;letter-spacing:-.055em;margin:8px 0 13px}.hero p{line-height:1.55;color:var(--muted);max-width:760px}.hero-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}
+.pill{font-size:11px;font-weight:900;padding:8px 10px;border:1px solid var(--border);background:rgba(255,255,255,.045);border-radius:999px;color:#dce5f1}
+.stats{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{padding:15px;border-radius:15px;background:rgba(255,255,255,.045);border:1px solid var(--border)}.stat b{display:block;font-size:24px}.stat span{font-size:11px;color:var(--muted)}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:25px 2px 12px}.section-head h3{margin:0;font-size:20px}.section-head p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.mode-card{text-align:left;padding:16px;color:white;border:1px solid var(--border);background:rgba(16,28,47,.94);border-radius:17px;transition:.18s transform,.18s border-color;min-height:125px}.mode-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.22)}.mode-card.selected{outline:2px solid #60a5fa;background:linear-gradient(180deg,rgba(42,74,114,.7),rgba(16,28,47,.97))}
+.mode-icon{font-size:25px}.mode-card b{display:block;font-size:15px;margin:8px 0 4px}.mode-card span{font-size:12px;color:var(--muted);line-height:1.4}.daily-tag{display:inline-block;margin-top:7px;font-size:10px!important;color:#dbeafe!important;background:rgba(96,165,250,.13);padding:4px 7px;border-radius:999px}
+.line-picker{margin-top:20px}.lines-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.line-card{text-align:left;color:white;background:rgba(16,28,47,.94);border:1px solid var(--border);border-radius:17px;padding:14px;transition:.18s transform,.18s border-color}.line-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.22)}.line-top{display:flex;justify-content:space-between;align-items:center}.line-badge{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:1000;border:3px solid rgba(255,255,255,.92)}.line-card h4{margin:11px 0 3px}.line-card small{color:var(--muted)}.progress{height:7px;border-radius:20px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:10px}.progress i{display:block;height:100%;border-radius:20px}
+.global-banner{margin-top:16px;padding:16px}.big-progress{height:13px;background:rgba(255,255,255,.07);border-radius:30px;overflow:hidden;margin-top:10px}.big-progress i{display:block;height:100%;background:linear-gradient(90deg,#60a5fa,#34d399);border-radius:30px}
+.game-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px}.side{padding:17px;align-self:start;position:sticky;top:14px}.side h3{margin:16px 0 4px}.side p{color:var(--muted);font-size:12px;line-height:1.5}.route-list{display:grid;gap:7px;margin-top:13px}.route-btn{border:1px solid var(--border);background:rgba(255,255,255,.035);color:white;border-radius:11px;padding:10px;text-align:left;font-size:11px;font-weight:850}.route-btn.active{outline:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.09)}
+.side-stat{margin-top:14px;padding:12px;border:1px solid var(--border);background:rgba(255,255,255,.035);border-radius:13px}.side-stat b{font-size:18px;display:block}.side-stat span{font-size:10px;color:var(--muted)}
+.game-card{padding:22px;min-height:700px;--line:#60a5fa;--lineText:white}.game-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}.line-title{display:flex;align-items:center;gap:12px}.line-title .line-badge{width:52px;height:52px}.line-title h2{margin:0;font-size:25px}.line-title p{margin:4px 0 0;color:var(--muted);font-size:12px}.mode-status{text-align:right}.mode-status b{font-size:20px}.mode-status small{display:block;color:var(--muted);font-size:10px}
+.status-strip{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}.status-chip{padding:8px 10px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid var(--border);font-size:11px;font-weight:900}.status-chip.danger{color:#fecdd3}.status-chip.good{color:#bbf7d0}.status-chip.warn{color:#fde68a}
+.map-wrap{border:1px solid var(--border);background:#091525;border-radius:16px;padding:10px;margin:15px 0;overflow-x:auto}.map-label{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:10px;padding:2px 4px 8px}.schematic{height:185px;min-width:100%;display:block}.schematic text{font-family:inherit}
+.track{margin:16px 0;padding:3px 4px;max-height:250px;overflow:auto}.stop{position:relative;padding:0 0 14px 38px;min-height:33px}.stop:before{content:"";position:absolute;left:8px;top:7px;width:13px;height:13px;border-radius:50%;background:#263850;border:3px solid #8094ae;z-index:2}.stop:after{content:"";position:absolute;left:15px;top:23px;width:3px;height:calc(100% - 5px);background:#314861}.stop:last-child:after{display:none}.stop.revealed:before{background:var(--line);border-color:#fff}.stop.current:before{background:#fff;border-color:var(--line);animation:pulse 1.3s infinite}.stop .name{font-weight:850}.stop.locked .name{color:#667a94;letter-spacing:.1em}.stop .meta{color:var(--muted);font-size:10px;margin-top:2px}@keyframes pulse{50%{box-shadow:0 0 0 10px transparent}0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--line) 30%,transparent)}}
+.answer-zone{border-top:1px solid var(--border);padding-top:18px}.prompt{color:var(--muted);font-size:12px;margin-bottom:8px}.prompt strong{color:white}.answer-row{display:flex;gap:9px;position:relative}.input-wrap{position:relative;flex:1}.answer-row input,.name-input{width:100%;background:#081421;color:white;border:1px solid #32465f;border-radius:13px;padding:14px 15px;outline:none;font-weight:800}.answer-row input:focus,.name-input:focus{border-color:var(--line);box-shadow:0 0 0 3px color-mix(in srgb,var(--line) 18%,transparent)}.primary{border:0;border-radius:13px;padding:0 18px;background:var(--line);color:var(--lineText);font-weight:950}
+.suggestions{position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:15;background:#13243a;border:1px solid #3a506c;border-radius:13px;box-shadow:0 18px 50px rgba(0,0,0,.45);overflow:hidden;max-height:260px;overflow-y:auto}.suggestion{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;font-weight:800;display:flex;justify-content:space-between;gap:10px}.suggestion:last-child{border-bottom:0}.suggestion:hover,.suggestion.active{background:#203754}.suggestion small{color:var(--muted);font-weight:700}
+.feedback{height:23px;font-size:12px;font-weight:900;margin-top:7px}.feedback.good{color:var(--good)}.feedback.bad{color:var(--bad)}.feedback.warn{color:var(--warn)}
+.hints{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}.hint-btn{border:1px solid var(--border);background:rgba(255,255,255,.04);color:#dce6f4;border-radius:10px;padding:8px 9px;font-size:11px;font-weight:850}.hint-btn:disabled{opacity:.4}.hint-output{margin-top:9px;padding:11px;border-radius:11px;background:rgba(255,255,255,.04);font-size:12px;color:#cfdaea;min-height:40px}
+.end-box{text-align:center;padding:30px;border:1px dashed rgba(255,255,255,.18);border-radius:17px;margin-top:18px}.end-box .emoji{font-size:49px}.end-box h3{margin:7px 0;font-size:23px}.end-box p{color:var(--muted);line-height:1.5}.end-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.special{padding:24px}.special-head{display:flex;justify-content:space-between;align-items:start;gap:15px}.special h2{margin:0}.special p{color:var(--muted)}.question-card{margin-top:20px;padding:25px;border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.035);text-align:center}.question-kicker{text-transform:uppercase;letter-spacing:.12em;font-size:10px;color:var(--muted);font-weight:950}.question-main{font-size:27px;font-weight:950;margin:9px 0}.question-sub{font-size:12px;color:var(--muted);margin-bottom:18px}.special .answer-row{max-width:720px;margin:auto}.special-stats{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:15px}
+.modal-wrap{position:fixed;inset:0;background:rgba(2,7,15,.78);backdrop-filter:blur(8px);display:grid;place-items:center;padding:18px;z-index:40}.modal{max-width:760px;width:100%;padding:22px;max-height:90vh;overflow:auto}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.modal h2{margin:0}.badges-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}.badge-card{padding:13px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.04)}.badge-card.locked{opacity:.42;filter:grayscale(1)}.badge-card .ico{font-size:24px}.badge-card b{display:block;margin:5px 0 2px;font-size:13px}.badge-card span{font-size:10px;color:var(--muted);line-height:1.35}
+.duel-config{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:13px 0}.footer{text-align:center;color:#687c96;font-size:10px;margin:27px 0 8px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#17283e;color:white;border:1px solid var(--border);padding:10px 14px;border-radius:12px;box-shadow:var(--shadow);font-size:12px;font-weight:850;z-index:60}
+@media(max-width:960px){.hero{grid-template-columns:1fr}.modes{grid-template-columns:repeat(2,1fr)}.lines-grid{grid-template-columns:repeat(2,1fr)}.game-layout{grid-template-columns:1fr}.side{position:static}.route-list{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.app{padding:13px}.topbar{align-items:flex-start}.brand p{display:none}.hero-main{padding:20px}.hero h2{font-size:30px}.modes,.lines-grid,.badges-grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.game-card,.special{padding:15px}.answer-row{flex-direction:column}.primary{padding:13px}.duel-config{grid-template-columns:1fr}.question-main{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="logo">M</div><div><h1>MétroChain V2</h1><p>Trouve le métro parisien station après station.</p></div></div>
+  <div class="actions"><button class="btn ghost" id="badgesBtn">🏆 Badges</button><button class="btn ghost bad" id="resetBtn">Réinitialiser</button></div>
+</header>
+
+<main id="home">
+<section class="hero">
+  <div class="card hero-main">
+    <div class="eyebrow">100 % local • 9 modes de jeu</div>
+    <h2>Une station trouvée.<br>La suivante se débloque.</h2>
+    <p>Écris le nom de la station suivante et avance jusqu'au terminus. L'autocomplétion t'aide uniquement sur l'orthographe. Ta progression, tes scores, tes perfect runs et tes badges restent enregistrés sur cet ordinateur.</p>
+    <div class="hero-pills"><span class="pill">⌨️ Autocomplétion</span><span class="pill">🗺️ tracé progressif</span><span class="pill">💾 sauvegarde locale</span><span class="pill">🔥 défi quotidien</span></div>
+  </div>
+  <div class="card stats">
+    <div class="stat"><b id="globalPct">0%</b><span>réseau maîtrisé</span></div>
+    <div class="stat"><b id="masteredCount">0</b><span>stations de ligne trouvées</span></div>
+    <div class="stat"><b id="scoreTotal">0</b><span>points cumulés</span></div>
+    <div class="stat"><b id="badgeCount">0</b><span>badges débloqués</span></div>
+  </div>
+</section>
+
+<div class="section-head"><div><h3>Modes de jeu</h3><p>Choisis ton défi. Les modes avec une ligne te demanderont ensuite laquelle jouer.</p></div></div>
+<section class="modes" id="modesGrid">
+  <button class="mode-card selected" data-mode="classic"><div class="mode-icon">🚇</div><b>Classique</b><span>Toutes les stations dans l'ordre, indices autorisés.</span></button>
+  <button class="mode-card" data-mode="daily"><div class="mode-icon">🔥</div><b>Métro du jour</b><span>Même ligne, parcours et sens pour tout le monde. Score partageable.</span><span class="daily-tag" id="dailyLabel"></span></button>
+  <button class="mode-card" data-mode="lives"><div class="mode-icon">❤️</div><b>3 vies</b><span>Trois mauvaises réponses et la partie est terminée.</span></button>
+  <button class="mode-card" data-mode="timed"><div class="mode-icon">⏱️</div><b>Contre-la-montre</b><span>120 secondes pour trouver le plus de stations possible.</span></button>
+  <button class="mode-card" data-mode="perfect"><div class="mode-icon">👑</div><b>Perfect Run</b><span>Termine la ligne sans erreur et sans utiliser d'indice.</span></button>
+  <button class="mode-card" data-mode="random"><div class="mode-icon">🎲</div><b>Mode aléatoire</b><span>Une station, aucune ligne affichée : retrouve la suivante.</span></button>
+  <button class="mode-card" data-mode="connections"><div class="mode-icon">🔀</div><b>Correspondances</b><span>Une station + une ligne + une direction : quelle station vient après ?</span></button>
+  <button class="mode-card" data-mode="duel"><div class="mode-icon">👥</div><b>Duel</b><span>Deux joueurs alternent. La première mauvaise station fait perdre.</span></button>
+  <button class="mode-card" data-mode="global"><div class="mode-icon">🌍</div><b>Partie globale</b><span>Enchaîne toutes les lignes et toutes les branches du réseau.</span></button>
+</section>
+
+<section id="linePicker" class="line-picker">
+  <div class="section-head"><div><h3 id="pickerTitle">Choisis une ligne</h3><p id="pickerText">Mode Classique</p></div></div>
+  <div class="lines-grid" id="linesGrid"></div>
+</section>
+
+<section class="card global-banner">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:end"><div><b>🌍 Partie globale</b><div style="font-size:11px;color:var(--muted);margin-top:3px" id="globalText">Pas encore commencée.</div></div><b id="globalChallengePct">0%</b></div>
+  <div class="big-progress"><i id="globalChallengeBar" style="width:0%"></i></div>
+</section>
+</main>
+
+<main id="game" class="hidden">
+<div class="game-layout">
+  <aside class="card side">
+    <button class="btn ghost" id="backBtn">← Accueil</button>
+    <h3 id="sideTitle"></h3><p id="sideText"></p>
+    <div id="duelNames" class="duel-config hidden"><input class="name-input" id="p1" value="Joueur 1"><input class="name-input" id="p2" value="Joueur 2"></div>
+    <div class="route-list" id="routeList"></div>
+    <div class="side-stat"><b id="lineCompletion">0%</b><span>maîtrise de la ligne</span></div>
+  </aside>
+  <section class="card game-card" id="gameCard">
+    <div class="game-head">
+      <div class="line-title"><div class="line-badge" id="gameBadge"></div><div><h2 id="gameTitle"></h2><p id="routeTitle"></p></div></div>
+      <div class="mode-status"><b id="routeScore">0</b><small id="scoreLabel">points</small></div>
+    </div>
+    <div class="status-strip" id="statusStrip"></div>
+    <div id="globalRunWrap" class="hidden"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)"><span>Progression partie globale</span><b id="globalRunPct">0%</b></div><div class="big-progress"><i id="globalRunBar" style="width:0%"></i></div></div>
+    <div class="map-wrap">
+      <div class="map-label"><span>🗺️ Tracé progressif du parcours</span><span id="mapProgress"></span></div>
+      <svg id="schematic" class="schematic" aria-label="Tracé progressif de la ligne"></svg>
+    </div>
+    <div class="track" id="track"></div>
+    <div class="answer-zone" id="answerZone">
+      <div class="prompt" id="prompt"></div>
+      <form class="answer-row" id="answerForm">
+        <div class="input-wrap"><input id="answerInput" autocomplete="off" spellcheck="false" placeholder="Commence à écrire une station…"><div class="suggestions hidden" id="answerSuggestions"></div></div>
+        <button class="primary" type="submit">Valider ↵</button>
+      </form>
+      <div class="feedback" id="feedback"></div>
+      <div class="hints" id="hints">
+        <button class="hint-btn" data-hint="custom">💡 Indice personnalisé · −10</button>
+        <button class="hint-btn" data-hint="letter">🔤 Première lettre · −5</button>
+        <button class="hint-btn" data-hint="connections">🔁 Correspondances · −10</button>
+        <button class="hint-btn" data-hint="reveal">👁 Révéler · −35</button>
+      </div>
+      <div class="hint-output" id="hintOutput">Aucun indice utilisé.</div>
+    </div>
+    <div class="end-box hidden" id="endBox"><div class="emoji" id="endEmoji">🚇</div><h3 id="endTitle">Trajet terminé</h3><p id="endText"></p><div class="end-actions" id="endActions"></div></div>
+  </section>
+</div>
+</main>
+
+<main id="special" class="hidden">
+<section class="card special">
+  <div class="special-head"><div><button class="btn ghost" id="specialBack">← Accueil</button><h2 id="specialTitle" style="margin-top:15px"></h2><p id="specialDesc"></p></div><div class="mode-status"><b id="specialScore">0</b><small>points</small></div></div>
+  <div class="question-card">
+    <div class="question-kicker" id="questionKicker"></div>
+    <div class="question-main" id="questionMain"></div>
+    <div class="question-sub" id="questionSub"></div>
+    <form class="answer-row" id="specialForm">
+      <div class="input-wrap"><input id="specialInput" autocomplete="off" spellcheck="false" placeholder="Nom de la station…"><div class="suggestions hidden" id="specialSuggestions"></div></div>
+      <button class="primary" type="submit" style="--line:#60a5fa;--lineText:white;background:#60a5fa;color:#081421">Valider ↵</button>
+    </form>
+    <div class="feedback" id="specialFeedback"></div>
+    <div class="special-stats" id="specialStats"></div>
+  </div>
+</section>
+</main>
+
+<div class="modal-wrap hidden" id="badgesModal">
+ <div class="card modal"><div class="modal-head"><h2>🏆 Mes badges</h2><button class="btn ghost" id="closeBadges">✕</button></div><div class="badges-grid" id="badgesGrid"></div></div>
+</div>
+<div class="toast hidden" id="toast"></div>
+<div class="footer">Prototype local non officiel • aucune donnée personnelle envoyée • progression stockée dans le navigateur</div>
+</div>
+
+<script>
+const LINES = {
+"1":{color:"#FFCD00",text:"#15223a",routes:[
+ {id:"main",name:"La Défense → Château de Vincennes",stops:["La Défense – Grande Arche","Esplanade de La Défense","Pont de Neuilly","Les Sablons","Porte Maillot","Argentine","Charles de Gaulle – Étoile","George V","Franklin D. Roosevelt","Champs-Élysées – Clemenceau","Concorde","Tuileries","Palais Royal – Musée du Louvre","Louvre – Rivoli","Châtelet","Hôtel de Ville","Saint-Paul","Bastille","Gare de Lyon","Reuilly – Diderot","Nation","Porte de Vincennes","Saint-Mandé","Bérault","Château de Vincennes"]}]},
+"2":{color:"#003CA6",routes:[
+ {id:"main",name:"Porte Dauphine → Nation",stops:["Porte Dauphine","Victor Hugo","Charles de Gaulle – Étoile","Ternes","Courcelles","Monceau","Villiers","Rome","Place de Clichy","Blanche","Pigalle","Anvers","Barbès – Rochechouart","La Chapelle","Stalingrad","Jaurès","Colonel Fabien","Belleville","Couronnes","Ménilmontant","Père Lachaise","Philippe Auguste","Alexandre Dumas","Avron","Nation"]}]},
+"3":{color:"#837902",routes:[
+ {id:"main",name:"Pont de Levallois → Gallieni",stops:["Pont de Levallois – Bécon","Anatole France","Louise Michel","Porte de Champerret","Pereire","Wagram","Malesherbes","Villiers","Europe","Saint-Lazare","Havre – Caumartin","Opéra","Quatre-Septembre","Bourse","Sentier","Réaumur – Sébastopol","Arts et Métiers","Temple","République","Parmentier","Rue Saint-Maur","Père Lachaise","Gambetta","Porte de Bagnolet","Gallieni"]}]},
+"3bis":{color:"#6EC4E8",text:"#10243a",routes:[
+ {id:"main",name:"Gambetta → Porte des Lilas",stops:["Gambetta","Pelleport","Saint-Fargeau","Porte des Lilas"]}]},
+"4":{color:"#CF009E",routes:[
+ {id:"main",name:"Porte de Clignancourt → Bagneux",stops:["Porte de Clignancourt","Simplon","Marcadet – Poissonniers","Château Rouge","Barbès – Rochechouart","Gare du Nord","Gare de l'Est","Château d'Eau","Strasbourg – Saint-Denis","Réaumur – Sébastopol","Étienne Marcel","Les Halles","Châtelet","Cité","Saint-Michel","Odéon","Saint-Germain-des-Prés","Saint-Sulpice","Saint-Placide","Montparnasse – Bienvenüe","Vavin","Raspail","Denfert-Rochereau","Mouton-Duvernet","Alésia","Porte d'Orléans","Mairie de Montrouge","Barbara","Bagneux – Lucie Aubrac"]}]},
+"5":{color:"#FF7E2E",text:"#172239",routes:[
+ {id:"main",name:"Bobigny → Place d'Italie",stops:["Bobigny – Pablo Picasso","Bobigny – Pantin – Raymond Queneau","Église de Pantin","Hoche","Porte de Pantin","Ourcq","Laumière","Jaurès","Stalingrad","Gare du Nord","Gare de l'Est","Jacques Bonsergent","République","Oberkampf","Richard-Lenoir","Bréguet – Sabin","Bastille","Quai de la Rapée","Gare d'Austerlitz","Saint-Marcel","Campo-Formio","Place d'Italie"]}]},
+"6":{color:"#6ECA97",text:"#10243a",routes:[
+ {id:"main",name:"Charles de Gaulle – Étoile → Nation",stops:["Charles de Gaulle – Étoile","Kléber","Boissière","Trocadéro","Passy","Bir-Hakeim","Dupleix","La Motte-Picquet – Grenelle","Cambronne","Sèvres – Lecourbe","Pasteur","Montparnasse – Bienvenüe","Edgar Quinet","Raspail","Denfert-Rochereau","Saint-Jacques","Glacière","Corvisart","Place d'Italie","Nationale","Chevaleret","Quai de la Gare","Bercy","Dugommier","Daumesnil","Bel-Air","Picpus","Nation"]}]},
+"7":{color:"#FA9ABA",text:"#172239",routes:[
+ {id:"villejuif",name:"La Courneuve → Villejuif",stops:["La Courneuve – 8 Mai 1945","Fort d'Aubervilliers","Aubervilliers – Pantin – Quatre Chemins","Porte de la Villette","Corentin Cariou","Crimée","Riquet","Stalingrad","Louis Blanc","Château-Landon","Gare de l'Est","Poissonnière","Cadet","Le Peletier","Chaussée d'Antin – La Fayette","Opéra","Pyramides","Palais Royal – Musée du Louvre","Pont Neuf","Châtelet","Pont Marie","Sully – Morland","Jussieu","Place Monge","Censier – Daubenton","Les Gobelins","Place d'Italie","Tolbiac","Maison Blanche","Le Kremlin-Bicêtre","Villejuif – Léo Lagrange","Villejuif – Paul Vaillant-Couturier","Villejuif – Louis Aragon"]},
+ {id:"ivry",name:"La Courneuve → Mairie d'Ivry",stops:["La Courneuve – 8 Mai 1945","Fort d'Aubervilliers","Aubervilliers – Pantin – Quatre Chemins","Porte de la Villette","Corentin Cariou","Crimée","Riquet","Stalingrad","Louis Blanc","Château-Landon","Gare de l'Est","Poissonnière","Cadet","Le Peletier","Chaussée d'Antin – La Fayette","Opéra","Pyramides","Palais Royal – Musée du Louvre","Pont Neuf","Châtelet","Pont Marie","Sully – Morland","Jussieu","Place Monge","Censier – Daubenton","Les Gobelins","Place d'Italie","Tolbiac","Maison Blanche","Porte d'Italie","Porte de Choisy","Porte d'Ivry","Pierre et Marie Curie","Mairie d'Ivry"]}]},
+"7bis":{color:"#6ECA97",text:"#10243a",routes:[
+ {id:"loop",name:"Louis Blanc → boucle du Pré-Saint-Gervais",stops:["Louis Blanc","Jaurès","Bolivar","Buttes Chaumont","Botzaris","Place des Fêtes","Pré-Saint-Gervais","Danube"]}]},
+"8":{color:"#E19BDF",text:"#172239",routes:[
+ {id:"main",name:"Balard → Créteil – Pointe du Lac",stops:["Balard","Lourmel","Boucicaut","Félix Faure","Commerce","La Motte-Picquet – Grenelle","École Militaire","La Tour-Maubourg","Invalides","Concorde","Madeleine","Opéra","Richelieu – Drouot","Grands Boulevards","Bonne Nouvelle","Strasbourg – Saint-Denis","République","Filles du Calvaire","Saint-Sébastien – Froissart","Chemin Vert","Bastille","Ledru-Rollin","Faidherbe – Chaligny","Reuilly – Diderot","Montgallet","Daumesnil","Michel Bizot","Porte Dorée","Porte de Charenton","Liberté","Charenton – Écoles","École Vétérinaire de Maisons-Alfort","Maisons-Alfort – Stade","Maisons-Alfort – Les Juilliottes","Créteil – L'Échat","Créteil – Université","Créteil – Préfecture","Créteil – Pointe du Lac"]}]},
+"9":{color:"#B6BD00",text:"#172239",routes:[
+ {id:"main",name:"Pont de Sèvres → Mairie de Montreuil",stops:["Pont de Sèvres","Billancourt","Marcel Sembat","Porte de Saint-Cloud","Exelmans","Michel-Ange – Molitor","Michel-Ange – Auteuil","Jasmin","Ranelagh","La Muette","Rue de la Pompe","Trocadéro","Iéna","Alma – Marceau","Franklin D. Roosevelt","Saint-Philippe du Roule","Miromesnil","Saint-Augustin","Havre – Caumartin","Chaussée d'Antin – La Fayette","Richelieu – Drouot","Grands Boulevards","Bonne Nouvelle","Strasbourg – Saint-Denis","République","Oberkampf","Saint-Ambroise","Voltaire","Charonne","Rue des Boulets","Nation","Buzenval","Maraîchers","Porte de Montreuil","Robespierre","Croix de Chavaux","Mairie de Montreuil"]}]},
+"10":{color:"#C9910D",text:"#172239",routes:[
+ {id:"east",name:"Boulogne → Gare d'Austerlitz",stops:["Boulogne – Pont de Saint-Cloud","Boulogne – Jean Jaurès","Michel-Ange – Molitor","Chardon-Lagache","Mirabeau","Javel – André Citroën","Charles Michels","Avenue Émile Zola","La Motte-Picquet – Grenelle","Ségur","Duroc","Vaneau","Sèvres – Babylone","Mabillon","Odéon","Cluny – La Sorbonne","Maubert – Mutualité","Cardinal Lemoine","Jussieu","Gare d'Austerlitz"]},
+ {id:"west",name:"Gare d'Austerlitz → Boulogne",stops:["Gare d'Austerlitz","Jussieu","Cardinal Lemoine","Maubert – Mutualité","Cluny – La Sorbonne","Odéon","Mabillon","Sèvres – Babylone","Vaneau","Duroc","Ségur","La Motte-Picquet – Grenelle","Avenue Émile Zola","Charles Michels","Javel – André Citroën","Église d'Auteuil","Michel-Ange – Auteuil","Porte d'Auteuil","Boulogne – Jean Jaurès","Boulogne – Pont de Saint-Cloud"]}]},
+"11":{color:"#704B1C",routes:[
+ {id:"main",name:"Châtelet → Rosny – Bois-Perrier",stops:["Châtelet","Hôtel de Ville","Rambuteau","Arts et Métiers","République","Goncourt","Belleville","Pyrénées","Jourdain","Place des Fêtes","Télégraphe","Porte des Lilas","Mairie des Lilas","Serge Gainsbourg","Romainville – Carnot","Montreuil – Hôpital","La Dhuys","Coteaux Beauclair","Rosny – Bois-Perrier"]}]},
+"12":{color:"#007852",routes:[
+ {id:"main",name:"Mairie d'Aubervilliers → Mairie d'Issy",stops:["Mairie d'Aubervilliers","Aimé Césaire","Front Populaire","Porte de la Chapelle","Marx Dormoy","Marcadet – Poissonniers","Jules Joffrin","Lamarck – Caulaincourt","Abbesses","Pigalle","Saint-Georges","Notre-Dame-de-Lorette","Trinité – d'Estienne d'Orves","Saint-Lazare","Madeleine","Concorde","Assemblée Nationale","Solférino","Rue du Bac","Sèvres – Babylone","Rennes","Notre-Dame-des-Champs","Montparnasse – Bienvenüe","Falguière","Pasteur","Volontaires","Vaugirard","Convention","Porte de Versailles","Corentin Celton","Mairie d'Issy"]}]},
+"13":{color:"#6EC4E8",text:"#10243a",routes:[
+ {id:"asnieres",name:"Les Courtilles → Châtillon",stops:["Asnières – Gennevilliers – Les Courtilles","Les Agnettes","Gabriel Péri","Mairie de Clichy","Porte de Clichy","Brochant","La Fourche","Place de Clichy","Liège","Saint-Lazare","Miromesnil","Champs-Élysées – Clemenceau","Invalides","Varenne","Saint-François-Xavier","Duroc","Montparnasse – Bienvenüe","Gaîté","Pernety","Plaisance","Porte de Vanves","Malakoff – Plateau de Vanves","Malakoff – Rue Étienne Dolet","Châtillon – Montrouge"]},
+ {id:"saintdenis",name:"Saint-Denis Université → Châtillon",stops:["Saint-Denis – Université","Basilique de Saint-Denis","Saint-Denis – Porte de Paris","Carrefour Pleyel","Mairie de Saint-Ouen","Garibaldi","Porte de Saint-Ouen","Guy Môquet","La Fourche","Place de Clichy","Liège","Saint-Lazare","Miromesnil","Champs-Élysées – Clemenceau","Invalides","Varenne","Saint-François-Xavier","Duroc","Montparnasse – Bienvenüe","Gaîté","Pernety","Plaisance","Porte de Vanves","Malakoff – Plateau de Vanves","Malakoff – Rue Étienne Dolet","Châtillon – Montrouge"]}]},
+"14":{color:"#62259D",routes:[
+ {id:"main",name:"Saint-Denis – Pleyel → Aéroport d'Orly",stops:["Saint-Denis – Pleyel","Mairie de Saint-Ouen","Saint-Ouen","Porte de Clichy","Pont Cardinet","Saint-Lazare","Madeleine","Pyramides","Châtelet","Gare de Lyon","Bercy","Cour Saint-Émilion","Bibliothèque François Mitterrand","Olympiades","Maison Blanche","Hôpital Bicêtre","Villejuif – Gustave Roussy","L'Haÿ-les-Roses","Chevilly-Larue","Thiais – Orly","Aéroport d'Orly"]}]}
+};
+
+const ORDER=["1","2","3","3bis","4","5","6","7","7bis","8","9","10","11","12","13","14"];
+const MODE_INFO={
+ classic:["Classique","Trouve toutes les stations dans l'ordre."],
+ lives:["3 vies","Trois erreurs maximum sur ce parcours."],
+ timed:["Contre-la-montre","Tu as exactement 2 minutes."],
+ perfect:["Perfect Run","Aucune erreur et aucun indice pour valider le perfect."],
+ duel:["Duel","Deux joueurs alternent ; une erreur fait perdre."],
+ daily:["Métro du jour","Le parcours du jour est identique pour tous."],
+ global:["Partie globale","Toutes les lignes et branches, dans l'ordre."]
+};
+const CUSTOM_HINTS={
+ "abbesses":"Tu es à Montmartre, dans le 18e, non loin du Sacré-Cœur.",
+ "anvers":"Station au pied de Montmartre, très proche du Sacré-Cœur.",
+ "marcadet poissonniers":"Station du 18e arrondissement, au croisement des lignes 4 et 12.",
+ "chateau rouge":"Station du 18e arrondissement, proche du quartier de la Goutte-d'Or.",
+ "barbes rochechouart":"Station à la limite des 9e, 10e et 18e arrondissements.",
+ "charles de gaulle etoile":"Station située sous la place de l'Étoile, au pied de l'Arc de Triomphe.",
+ "trocadero":"Un des points de vue les plus connus sur la tour Eiffel.",
+ "bir hakeim":"Station aérienne proche de la tour Eiffel et du Champ-de-Mars.",
+ "ecole militaire":"Station proche du Champ-de-Mars.",
+ "concorde":"Station sous une grande place avec un obélisque égyptien.",
+ "palais royal musee du louvre":"Station à côté du Louvre et du Palais-Royal.",
+ "louvre rivoli":"Son nom indique directement sa proximité avec le musée du Louvre.",
+ "chatelet":"L'un des plus grands pôles de correspondance du centre de Paris.",
+ "hotel de ville":"Station au cœur de Paris, à côté de l'Hôtel de Ville.",
+ "cite":"La station se trouve sur l'Île de la Cité.",
+ "saint michel":"Station du Quartier latin, proche de Notre-Dame.",
+ "bastille":"Station située sous la place connue pour sa colonne de Juillet.",
+ "gare de lyon":"Grande gare parisienne desservant notamment le sud-est de la France.",
+ "nation":"Grande place de l'est parisien, desservie par plusieurs lignes.",
+ "pere lachaise":"Son nom est celui du célèbre cimetière parisien voisin.",
+ "opera":"Station située près du Palais Garnier.",
+ "republique":"Grande place parisienne et important nœud de correspondances.",
+ "gare du nord":"Grande gare internationale du 10e arrondissement.",
+ "gare de l est":"Gare du 10e arrondissement, voisine de Gare du Nord.",
+ "gare d austerlitz":"Grande gare située près du Jardin des Plantes et de la Seine.",
+ "montparnasse bienvenue":"Très grand pôle de correspondance autour de la gare Montparnasse.",
+ "porte de versailles":"Station voisine du Parc des expositions de la Porte de Versailles.",
+ "bercy":"Station proche de l'Accor Arena et du parc de Bercy.",
+ "bibliotheque francois mitterrand":"Station du 13e, proche de la Bibliothèque nationale de France.",
+ "olympiades":"Station du 13e arrondissement, au cœur du quartier asiatique.",
+ "maison blanche":"Station du 13e arrondissement devenue correspondance avec la ligne 14.",
+ "aeroport d orly":"Le nom de la station donne presque l'indice : elle dessert directement un aéroport.",
+ "saint denis pleyel":"Grand pôle de transport au nord de Paris, près du Stade de France.",
+ "villejuif gustave roussy":"Station située au niveau du grand campus hospitalier Gustave-Roussy.",
+ "mairie de saint ouen":"Station située au centre de Saint-Ouen-sur-Seine.",
+ "pont cardinet":"Station proche de la gare de Pont-Cardinet dans le 17e.",
+ "porte de clichy":"Station du nord-ouest parisien, au niveau du tribunal de Paris.",
+ "place de clichy":"Grande place à la jonction des 8e, 9e, 17e et 18e.",
+ "pigalle":"Quartier connu pour ses salles de spectacle et sa vie nocturne.",
+ "porte dauphine":"Terminus occidental situé près du bois de Boulogne.",
+ "la defense grande arche":"Grand quartier d'affaires à l'ouest de Paris.",
+ "chateau de vincennes":"Terminus situé près du célèbre château à l'est de Paris.",
+ "porte maillot":"Station près du Palais des Congrès, à l'ouest de Paris.",
+ "mairie d aubervilliers":"Terminus nord de la ligne 12, au centre d'Aubervilliers.",
+ "front populaire":"Station à la limite de Saint-Denis et Aubervilliers.",
+ "rosny bois perrier":"Terminus oriental de la ligne 11, connecté au RER E.",
+ "serge gainsbourg":"Station récente de la ligne 11 portant le nom du chanteur.",
+ "place des fetes":"Station du 19e, desservie par les lignes 7bis et 11.",
+ "pre saint gervais":"Terminus en boucle de la ligne 7bis.",
+ "danube":"Station particulière de la boucle de la ligne 7bis.",
+ "pont de sevres":"Terminus ouest situé près de la Seine et de Boulogne-Billancourt.",
+ "mairie de montreuil":"Terminus est au centre de Montreuil.",
+ "creteil pointe du lac":"Terminus sud-est de la ligne 8 à Créteil.",
+ "villejuif louis aragon":"Terminus de branche au sud de Paris, à Villejuif.",
+ "mairie d ivry":"Terminus de branche de la ligne 7 à Ivry-sur-Seine.",
+ "saint denis universite":"Terminus nord d'une branche de la ligne 13.",
+ "asnieres gennevilliers les courtilles":"Terminus nord-ouest d'une branche de la ligne 13.",
+ "chatillon montrouge":"Terminus sud de la ligne 13.",
+ "bagneux lucie aubrac":"Terminus sud de la ligne 4.",
+ "mairie de montrouge":"Station au sud de Paris, juste avant les extensions vers Bagneux.",
+ "porte de clignancourt":"Terminus nord de la ligne 4, dans le 18e arrondissement.",
+ "bobigny pablo picasso":"Terminus nord-est de la ligne 5, à Bobigny.",
+ "place d italie":"Grande place du 13e et nœud des lignes 5, 6 et 7."
+};
+
+const storeKey="metrochain_v2";
+function freshState(){return {mastered:{},score:0,perfectRuns:0,bestTimed:0,daily:{},dailyHistory:[],duels:0,global:{task:0,index:0,score:0,complete:false},specialBest:{random:0,connections:0}}}
+let state;
+try{state=Object.assign(freshState(),JSON.parse(localStorage.getItem(storeKey)||"{}"))}catch{state=freshState()}
+state.global=Object.assign({task:0,index:0,score:0,complete:false},state.global||{});
+state.specialBest=Object.assign({random:0,connections:0},state.specialBest||{});
+let selectedMode="classic";
+let current={mode:"classic",line:null,baseRoute:null,route:null,index:0,score:0,mistakes:0,lives:3,perfect:true,hints:new Set(),timer:120,timerId:null,ended:false,duelTurn:0,duelScore:[0,0]};
+let special={mode:null,score:0,streak:0,q:null};
+let ac={main:{items:[],index:-1},special:{items:[],index:-1}};
+
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem(storeKey,JSON.stringify(state))}
+function norm(s){return(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/œ/g,"oe").replace(/æ/g,"ae").replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ")}
+function uniqueStops(line){return [...new Set(LINES[line].routes.flatMap(r=>r.stops))]}
+const ALL_STATIONS=[...new Set(ORDER.flatMap(uniqueStops))].sort((a,b)=>a.localeCompare(b,"fr"));
+function membershipsMap(){const m={};for(const l of ORDER)for(const s of uniqueStops(l)){const k=norm(s);(m[k]??=[]).push(l)}return m}
+const memberships=membershipsMap();
+function totalLineStops(){return ORDER.reduce((n,l)=>n+uniqueStops(l).length,0)}
+function masteredFor(line){return new Set(state.mastered[line]||[])}
+function linePct(line){const u=uniqueStops(line),g=masteredFor(line);return Math.round(u.filter(s=>g.has(s)).length/u.length*100)}
+function allUniqueMastered(){const s=new Set();for(const l of ORDER)for(const x of(state.mastered[l]||[]))s.add(norm(x));return s.size}
+function showToast(t){$("toast").textContent=t;$("toast").classList.remove("hidden");clearTimeout(showToast.t);showToast.t=setTimeout(()=>$("toast").classList.add("hidden"),1900)}
+function hashString(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function parisDate(){return new Intl.DateTimeFormat("fr-CA",{timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date())}
+function dailyChoice(){
+ const date=parisDate(),h=hashString("metrochain-"+date),line=ORDER[h%ORDER.length],d=LINES[line],routeIndex=(h>>>5)%d.routes.length,reverse=((h>>>11)&1)===1;
+ return {date,line,routeIndex,reverse}
+}
+const GLOBAL_TASKS=ORDER.flatMap(line=>LINES[line].routes.map((r,i)=>({line,routeIndex:i})));
+const GLOBAL_TOTAL=GLOBAL_TASKS.reduce((n,t)=>n+LINES[t.line].routes[t.routeIndex].stops.length,0);
+function globalDoneCount(){
+ let n=0;for(let i=0;i<Math.min(state.global.task,GLOBAL_TASKS.length);i++){const t=GLOBAL_TASKS[i];n+=LINES[t.line].routes[t.routeIndex].stops.length}
+ return n+(state.global.complete?0:(state.global.index||0));
+}
+function achievements(){
+ const a=[];
+ for(const l of ORDER)a.push({ico:"🚇",name:"Maître de la "+l,desc:"Trouver toutes les stations uniques de la ligne "+l+".",ok:linePct(l)===100});
+ a.push({ico:"👑",name:"Roi des lignes bis",desc:"Maîtriser entièrement les lignes 3bis et 7bis.",ok:linePct("3bis")===100&&linePct("7bis")===100});
+ a.push({ico:"🌿",name:"Expert des branches",desc:"Maîtriser les lignes 7, 10 et 13, branches et boucles comprises.",ok:["7","10","13"].every(l=>linePct(l)===100)});
+ a.push({ico:"303",name:"303 stations",desc:"Avoir trouvé au moins 303 stations différentes du réseau.",ok:allUniqueMastered()>=303});
+ a.push({ico:"✨",name:"Sans faute",desc:"Réussir au moins un Perfect Run.",ok:(state.perfectRuns||0)>0});
+ a.push({ico:"⚡",name:"Sprinteur",desc:"Trouver 20 stations ou plus en une session chrono.",ok:(state.bestTimed||0)>=20});
+ a.push({ico:"🔥",name:"Habitué du jour",desc:"Terminer 5 Métros du jour différents.",ok:(state.dailyHistory||[]).filter(x=>x.completed).length>=5});
+ a.push({ico:"🌍",name:"Tout Paris",desc:"Terminer la Partie globale.",ok:!!state.global.complete});
+ a.push({ico:"⚔️",name:"Dueliste",desc:"Jouer au moins 5 duels.",ok:(state.duels||0)>=5});
+ return a
+}
+function renderStats(){
+ const total=totalLineStops(),mastered=ORDER.reduce((n,l)=>n+masteredFor(l).size,0),badges=achievements().filter(a=>a.ok).length;
+ $("globalPct").textContent=Math.round(mastered/total*100)+"%";$("masteredCount").textContent=mastered+"/"+total;$("scoreTotal").textContent=state.score||0;$("badgeCount").textContent=badges+"/"+achievements().length;
+ const done=state.global.complete?GLOBAL_TOTAL:globalDoneCount(),pct=Math.min(100,Math.round(done/GLOBAL_TOTAL*100));
+ $("globalChallengePct").textContent=pct+"%";$("globalChallengeBar").style.width=pct+"%";
+ $("globalText").textContent=state.global.complete?"Partie globale terminée !":done?`${done}/${GLOBAL_TOTAL} étapes saisies • reprise automatique disponible`:"Pas encore commencée.";
+ const dc=dailyChoice();$("dailyLabel").textContent=`Aujourd'hui : ligne ${dc.line}`;
+}
+function renderLines(){
+ const g=$("linesGrid");g.innerHTML="";
+ for(const l of ORDER){const d=LINES[l],pct=linePct(l),b=document.createElement("button");b.className="line-card";
+ b.innerHTML=`<div class="line-top"><span class="line-badge" style="background:${d.color};color:${d.text||"#fff"}">${l}</span><b>${pct===100?"✅":"›"}</b></div><h4>Ligne ${l}</h4><small>${masteredFor(l).size}/${uniqueStops(l).length} stations • ${d.routes.length>1?d.routes.length+" parcours":"1 parcours"}</small><div class="progress"><i style="width:${pct}%;background:${d.color}"></i></div>`;
+ b.onclick=()=>startLineMode(l,selectedMode);g.appendChild(b)}
+}
+function setModePicker(mode){
+ selectedMode=mode;document.querySelectorAll(".mode-card").forEach(b=>b.classList.toggle("selected",b.dataset.mode===mode));
+ const info=MODE_INFO[mode]||["",""]; $("pickerTitle").textContent=mode==="duel"?"Choisis la ligne du duel":"Choisis une ligne";$("pickerText").textContent=info[0]+" — "+info[1];$("linePicker").classList.remove("hidden");$("linePicker").scrollIntoView({behavior:"smooth",block:"start"})
+}
+function showHome(){
+ stopTimer();$("home").classList.remove("hidden");$("game").classList.add("hidden");$("special").classList.add("hidden");renderStats();renderLines()
+}
+function hideAll(){ $("home").classList.add("hidden");$("game").classList.add("hidden");$("special").classList.add("hidden") }
+function cloneRoute(line,idx,reverse=false){const r=LINES[line].routes[idx];return {id:r.id+(reverse?"-rev":""),baseId:r.id,name:reverse?`${r.stops.at(-1)} → ${r.stops[0]}`:r.name,stops:reverse?[...r.stops].reverse():[...r.stops],routeIndex:idx,reverse}}
+function startLineMode(line,mode,routeIndex=0,reverse=false){
+ stopTimer();hideAll();$("game").classList.remove("hidden");
+ current={mode,line,baseRoute:LINES[line].routes[routeIndex],route:cloneRoute(line,routeIndex,reverse),index:0,score:0,mistakes:0,lives:3,perfect:true,hints:new Set(),timer:120,timerId:null,ended:false,duelTurn:0,duelScore:[0,0]};
+ if(mode==="duel")current.index=1;
+ renderGameShell();renderGame();
+ if(mode==="timed")startTimer();
+ setTimeout(()=>$("answerInput").focus(),70)
+}
+function startDaily(){
+ const d=dailyChoice();startLineMode(d.line,"daily",d.routeIndex,d.reverse)
+}
+function startGlobal(){
+ stopTimer();if(state.global.complete && confirm("La Partie globale est déjà terminée. La recommencer depuis la ligne 1 ?")){state.global={task:0,index:0,score:0,complete:false};save()}
+ const ti=Math.min(state.global.task,GLOBAL_TASKS.length-1),t=GLOBAL_TASKS[ti];hideAll();$("game").classList.remove("hidden");
+ current={mode:"global",line:t.line,baseRoute:LINES[t.line].routes[t.routeIndex],route:cloneRoute(t.line,t.routeIndex,false),index:state.global.index||0,score:state.global.score||0,mistakes:0,lives:3,perfect:true,hints:new Set(),timer:120,timerId:null,ended:false,duelTurn:0,duelScore:[0,0]};
+ renderGameShell();renderGame();setTimeout(()=>$("answerInput").focus(),70)
+}
+function renderGameShell(){
+ const d=LINES[current.line];$("gameCard").style.setProperty("--line",d.color);$("gameCard").style.setProperty("--lineText",d.text||"#fff");
+ $("gameBadge").textContent=current.line;$("gameBadge").style.background=d.color;$("gameBadge").style.color=d.text||"#fff";$("gameTitle").textContent="Ligne "+current.line;
+ $("sideTitle").textContent=MODE_INFO[current.mode]?.[0]||"Ligne "+current.line;$("sideText").textContent=MODE_INFO[current.mode]?.[1]||"";$("duelNames").classList.toggle("hidden",current.mode!=="duel");
+ renderRoutes()
+}
+function renderRoutes(){
+ const box=$("routeList");box.innerHTML="";
+ if(["daily","global"].includes(current.mode)){const x=document.createElement("div");x.className="route-btn active";x.textContent=current.route.name;box.appendChild(x);return}
+ LINES[current.line].routes.forEach((r,i)=>{
+   for(const rev of [false,true]){
+     const b=document.createElement("button");b.className="route-btn"+(current.route.routeIndex===i&&current.route.reverse===rev?" active":"");
+     b.textContent=(rev?"← ":"→ ")+(rev?`${r.stops.at(-1)} → ${r.stops[0]}`:r.name);
+     b.onclick=()=>startLineMode(current.line,current.mode,i,rev);box.appendChild(b)
+   }
+ })
+}
+function statusHTML(){
+ const s=[];s.push(`<span class="status-chip">${current.mode==="daily"?"🔥 Métro du jour":MODE_INFO[current.mode]?.[0]||current.mode}</span>`);
+ if(current.mode==="lives")s.push(`<span class="status-chip ${current.lives===1?"danger":""}">❤️ ${"●".repeat(current.lives)}${"○".repeat(3-current.lives)}</span>`);
+ if(current.mode==="timed")s.push(`<span class="status-chip ${current.timer<=20?"danger":"warn"}">⏱ ${Math.max(0,current.timer)} s</span>`);
+ if(current.mode==="perfect")s.push(`<span class="status-chip ${current.perfect?"good":"danger"}">👑 ${current.perfect?"Perfect actif":"Perfect perdu"}</span>`);
+ if(current.mode==="duel"){const names=[$("p1").value||"Joueur 1",$("p2").value||"Joueur 2"];s.push(`<span class="status-chip">🎯 Tour : ${names[current.duelTurn]}</span>`);s.push(`<span class="status-chip">${current.duelScore[0]} – ${current.duelScore[1]}</span>`)}
+ if(current.mode==="daily")s.push(`<span class="status-chip">📅 ${dailyChoice().date}</span>`);
+ return s.join("")
+}
+function renderGame(){
+ const r=current.route,d=LINES[current.line];$("routeTitle").textContent=r.name;$("routeScore").textContent=current.score;$("scoreLabel").textContent=current.mode==="timed"?"points • chrono":"points";$("lineCompletion").textContent=linePct(current.line)+"%";
+ $("statusStrip").innerHTML=statusHTML();
+ $("globalRunWrap").classList.toggle("hidden",current.mode!=="global");
+ if(current.mode==="global"){const done=globalDoneCount(),pct=Math.min(100,Math.round(done/GLOBAL_TOTAL*100));$("globalRunPct").textContent=pct+"%";$("globalRunBar").style.width=pct+"%"}
+ renderSchematic();renderTrack();
+ const done=current.index>=r.stops.length||current.ended;$("answerZone").classList.toggle("hidden",done);$("endBox").classList.toggle("hidden",!done);
+ if(done){renderEnd();return}
+ const prev=current.index?r.stops[current.index-1]:null;
+ if(current.mode==="duel")$("prompt").innerHTML=`Après <strong>${prev}</strong>, quelle est la station suivante ? <strong>${[$("p1").value||"Joueur 1",$("p2").value||"Joueur 2"][current.duelTurn]}</strong>`;
+ else $("prompt").innerHTML=current.index===0?`Trouve le <strong>terminus de départ</strong>.`:`Après <strong>${prev}</strong>, quelle est la station suivante ?`;
+ $("feedback").textContent="";$("feedback").className="feedback";$("hintOutput").textContent="Aucun indice utilisé pour cette station.";
+ current.hints=new Set();document.querySelectorAll(".hint-btn").forEach(b=>b.disabled=false);
+ $("hints").classList.toggle("hidden",current.mode==="duel");
+ $("answerInput").value="";closeSuggestions("main")
+}
+function renderTrack(){
+ const r=current.route,t=$("track");t.innerHTML="";
+ r.stops.forEach((s,i)=>{const div=document.createElement("div");div.className="stop "+(i<current.index?"revealed":i===current.index&&!current.ended?"current":"locked");div.innerHTML=`<div class="name">${i<current.index?s:"••••••••"}</div><div class="meta">${i<current.index?`${i+1} / ${r.stops.length}`:i===current.index&&!current.ended?"À trouver":"Verrouillée"}</div>`;t.appendChild(div)});
+ setTimeout(()=>{const e=t.children[Math.min(current.index,r.stops.length-1)];if(e)e.scrollIntoView({block:"nearest",behavior:"smooth"})},20)
+}
+function renderSchematic(){
+ const r=current.route,svg=$("schematic"),n=r.stops.length,w=Math.max(900,n*44),h=185,pad=36;svg.setAttribute("viewBox",`0 0 ${w} ${h}`);svg.style.width=w+"px";
+ const pts=r.stops.map((s,i)=>{const x=pad+(w-pad*2)*(i/(Math.max(1,n-1))),y=75+Math.sin(i*.72)*22+Math.sin(i*.19)*13;return[x,y]});
+ const all=pts.map(p=>p.join(",")).join(" ");const visible=pts.slice(0,Math.max(1,current.index)).map(p=>p.join(",")).join(" ");
+ let html=`<polyline points="${all}" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+ if(current.index>1)html+=`<polyline points="${visible}" fill="none" stroke="${LINES[current.line].color}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+ pts.forEach((p,i)=>{const revealed=i<current.index,currentDot=i===current.index&&!current.ended;html+=`<circle cx="${p[0]}" cy="${p[1]}" r="${currentDot?8:6}" fill="${revealed?LINES[current.line].color:currentDot?"white":"#253b55"}" stroke="${revealed||currentDot?"white":"#66809d"}" stroke-width="3"/>`;if(revealed){const label=r.stops[i].replace(/&/g,"&amp;").replace(/</g,"&lt;");html+=`<text x="${p[0]}" y="${p[1]+21}" transform="rotate(-38 ${p[0]} ${p[1]+21})" font-size="10" fill="#dbe7f5">${label}</text>`}});
+ svg.innerHTML=html;$("mapProgress").textContent=`${Math.min(current.index,r.stops.length)}/${r.stops.length} révélées`
+}
+function exactish(input,target){const a=norm(input),t=norm(target);if(!a)return false;if(a===t)return true;return false}
+function stationCost(){return [...current.hints].reduce((n,h)=>n+({custom:10,letter:5,connections:10,reveal:35}[h]||0),0)}
+function recordMastered(target){state.mastered[current.line]??=[];if(!state.mastered[current.line].includes(target))state.mastered[current.line].push(target)}
+function correctRoute(revealed=false){
+ const target=current.route.stops[current.index];recordMastered(target);
+ let points=revealed?0:Math.max(10,(current.mode==="perfect"?150:100)-current.mistakes*10-stationCost());current.score+=points;state.score=(state.score||0)+points;
+ if(current.mode==="duel"){current.duelScore[current.duelTurn]++;current.duelTurn=1-current.duelTurn}
+ current.index++;current.mistakes=0;current.hints=new Set();
+ if(current.mode==="global"){state.global.index=current.index;state.global.score=current.score}
+ save();
+ if(current.index>=current.route.stops.length)finishRoute();else renderGame()
+}
+function wrongRoute(){
+ current.mistakes++;current.perfect=false;
+ if(current.mode==="lives"){current.lives--;if(current.lives<=0){current.ended=true;renderGame();return}}
+ if(current.mode==="duel"){state.duels=(state.duels||0)+1;save();current.ended=true;renderGame();return}
+ $("feedback").textContent=current.mode==="perfect"?"Erreur : le Perfect Run est perdu, mais tu peux continuer.":"Mauvaise station. Essaie encore.";$("feedback").className="feedback bad";$("statusStrip").innerHTML=statusHTML()
+}
+function finishRoute(){
+ stopTimer();
+ if(current.mode==="perfect"&&current.perfect){state.perfectRuns=(state.perfectRuns||0)+1;showToast("👑 Perfect Run débloqué !")}
+ if(current.mode==="timed"){state.bestTimed=Math.max(state.bestTimed||0,current.index)}
+ if(current.mode==="daily"){const d=dailyChoice();state.daily[d.date]={score:current.score,completed:true,line:current.line};if(!state.dailyHistory.some(x=>x.date===d.date))state.dailyHistory.push({date:d.date,completed:true,score:current.score,line:current.line})}
+ if(current.mode==="global"){state.global.task++;state.global.index=0;state.global.score=current.score;if(state.global.task>=GLOBAL_TASKS.length){state.global.complete=true;current.ended=true}else{const t=GLOBAL_TASKS[state.global.task];current.line=t.line;current.baseRoute=LINES[t.line].routes[t.routeIndex];current.route=cloneRoute(t.line,t.routeIndex,false);current.index=0;current.mistakes=0;current.hints=new Set();renderGameShell();save();showToast("✓ Parcours terminé • ligne suivante");renderGame();return}}
+ save();current.ended=true;renderGame()
+}
+function renderEnd(){
+ const e=$("endBox"),actions=$("endActions");actions.innerHTML="";
+ let emoji="🚇",title="Trajet terminé !",text=`Score : ${current.score} points.`;
+ if(current.mode==="lives"&&current.lives<=0){emoji="💔";title="Plus de vies";text=`Tu as atteint ${current.index}/${current.route.stops.length} stations. Score : ${current.score}.`}
+ if(current.mode==="timed"&&current.timer<=0){emoji="⏱️";title="Temps écoulé";text=`Tu as trouvé ${current.index}/${current.route.stops.length} stations en 2 minutes. Meilleur : ${state.bestTimed||current.index}.`}
+ if(current.mode==="perfect"){emoji=current.perfect?"👑":"🚇";title=current.perfect?"Perfect Run !":"Trajet terminé";text=current.perfect?`Zéro faute, zéro indice. ${current.score} points.`:`Tu as terminé, mais le Perfect a été perdu. Score : ${current.score}.`}
+ if(current.mode==="duel"){const names=[$("p1").value||"Joueur 1",$("p2").value||"Joueur 2"],winner=names[1-current.duelTurn];emoji="⚔️";title=winner+" gagne !";text=`${names[current.duelTurn]} s'est trompé sur la station ${current.route.stops[current.index]||"suivante"}. Score : ${current.duelScore[0]} – ${current.duelScore[1]}.`}
+ if(current.mode==="daily"){emoji="🔥";title="Métro du jour terminé !";text=`Ligne ${current.line} • ${current.score} points. Partage ton résultat.`}
+ if(current.mode==="global"&&state.global.complete){emoji="🌍";title="Tout le métro terminé !";text=`Tu as terminé la gigantesque Partie globale. Score cumulé : ${state.global.score} points.`}
+ $("endEmoji").textContent=emoji;$("endTitle").textContent=title;$("endText").textContent=text;
+ const home=document.createElement("button");home.className="btn";home.textContent="← Accueil";home.onclick=showHome;actions.appendChild(home);
+ if(!["global"].includes(current.mode)){const replay=document.createElement("button");replay.className="btn";replay.textContent="Rejouer";replay.onclick=()=>startLineMode(current.line,current.mode,current.route.routeIndex,current.route.reverse);actions.appendChild(replay)}
+ if(current.mode==="daily"){const share=document.createElement("button");share.className="btn";share.textContent="📤 Partager mon score";share.onclick=shareDaily;actions.appendChild(share)}
+}
+function startTimer(){
+ stopTimer();current.timer=120;current.timerId=setInterval(()=>{current.timer--;$("statusStrip").innerHTML=statusHTML();if(current.timer<=0){stopTimer();state.bestTimed=Math.max(state.bestTimed||0,current.index);save();current.ended=true;renderGame()}},1000)
+}
+function stopTimer(){if(current.timerId){clearInterval(current.timerId);current.timerId=null}}
+function getCustomHint(target){
+ const k=norm(target);if(CUSTOM_HINTS[k])return CUSTOM_HINTS[k];
+ const ls=memberships[k]||[];if(ls.length>1)return `Cette station est une correspondance entre les lignes ${ls.join(", ")}.`;
+ if(/^porte /.test(k))return "Son nom commence par « Porte ».";
+ if(/^mairie /.test(k))return "Son nom commence par « Mairie ».";
+ if(/^gare /.test(k))return "Cette station porte le nom d'une gare parisienne.";
+ const words=target.split(/\s+|[-–—]+/).filter(Boolean);return `Son nom commence par « ${target.trim()[0].toUpperCase()} » et comporte ${words.length} mot${words.length>1?"s":""}.`
+}
+function useHint(type){
+ if(current.index>=current.route.stops.length)return;const target=current.route.stops[current.index];current.hints.add(type);if(current.mode==="perfect")current.perfect=false;
+ document.querySelector(`.hint-btn[data-hint="${type}"]`).disabled=true;
+ if(type==="custom")$("hintOutput").textContent=getCustomHint(target);
+ if(type==="letter")$("hintOutput").textContent=`Première lettre : ${target.trim()[0].toUpperCase()}.`;
+ if(type==="connections"){const ls=memberships[norm(target)]||[];$("hintOutput").textContent=ls.length>1?`Correspondances métro : lignes ${ls.join(", ")}.`:"Pas de correspondance avec une autre ligne de métro dans le jeu."}
+ if(type==="reveal"){$("hintOutput").textContent="Réponse : "+target;setTimeout(()=>correctRoute(true),650)}
+ $("statusStrip").innerHTML=statusHTML()
+}
+async function shareDaily(){
+ const d=dailyChoice(),txt=`🔥 MétroChain — ${d.date}\nLigne ${current.line} : ${current.score} points\n${current.perfect?"👑 Sans faute":"🚇 Parcours terminé"}\nÀ toi de jouer !`;
+ try{if(navigator.share)await navigator.share({title:"MétroChain — Métro du jour",text:txt});else{await copyText(txt);showToast("Résultat copié !")}}catch{}
+}
+async function copyText(txt){try{return await navigator.clipboard.writeText(txt)}catch{const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove()}}
+function renderBadges(){
+ const a=achievements(),g=$("badgesGrid");g.innerHTML="";for(const x of a){const d=document.createElement("div");d.className="badge-card"+(x.ok?"":" locked");d.innerHTML=`<div class="ico">${x.ico}</div><b>${x.name}</b><span>${x.ok?"Débloqué ✓":x.desc}</span>`;g.appendChild(d)}
+}
+function setupAutocomplete(inputId,boxId,key){
+ const input=$(inputId),box=$(boxId);
+ function refresh(){
+  const q=norm(input.value);if(!q){closeSuggestions(key);return}
+  const starts=ALL_STATIONS.filter(s=>norm(s).startsWith(q)),contains=ALL_STATIONS.filter(s=>!norm(s).startsWith(q)&&norm(s).includes(q));
+  ac[key].items=[...starts,...contains].slice(0,9);ac[key].index=-1;
+  if(!ac[key].items.length){closeSuggestions(key);return}
+  box.innerHTML=ac[key].items.map((s,i)=>`<div class="suggestion" data-i="${i}"><span>${s}</span><small>${(memberships[norm(s)]||[]).map(l=>"L"+l).join(" · ")}</small></div>`).join("");box.classList.remove("hidden");
+  box.querySelectorAll(".suggestion").forEach(el=>el.onmousedown=e=>{e.preventDefault();input.value=ac[key].items[+el.dataset.i];closeSuggestions(key);input.focus()})
+ }
+ input.addEventListener("input",refresh);input.addEventListener("focus",refresh);input.addEventListener("keydown",e=>{
+  if(box.classList.contains("hidden"))return;
+  if(e.key==="ArrowDown"){e.preventDefault();ac[key].index=Math.min(ac[key].index+1,ac[key].items.length-1);paintAC(box,key)}
+  if(e.key==="ArrowUp"){e.preventDefault();ac[key].index=Math.max(ac[key].index-1,0);paintAC(box,key)}
+  if(e.key==="Enter"&&ac[key].index>=0){e.preventDefault();input.value=ac[key].items[ac[key].index];closeSuggestions(key)}
+  if(e.key==="Escape")closeSuggestions(key)
+ });document.addEventListener("click",e=>{if(!box.contains(e.target)&&e.target!==input)closeSuggestions(key)})
+}
+function paintAC(box,key){[...box.children].forEach((x,i)=>x.classList.toggle("active",i===ac[key].index))}
+function closeSuggestions(key){const id=key==="main"?"answerSuggestions":"specialSuggestions";$(id).classList.add("hidden");ac[key].items=[];ac[key].index=-1}
+
+function startSpecial(mode){
+ hideAll();$("special").classList.remove("hidden");special={mode,score:0,streak:0,q:null};$("specialScore").textContent="0";
+ if(mode==="random"){$("specialTitle").textContent="🎲 Mode aléatoire";$("specialDesc").textContent="La ligne reste cachée. La station proposée n'appartient qu'à une seule ligne afin que la question soit toujours équitable."}
+ else{$("specialTitle").textContent="🔀 Mode correspondances";$("specialDesc").textContent="Tu connais la station, la ligne et la direction : trouve la station qui vient juste après."}
+ nextSpecial()
+}
+function specialCandidates(mode){
+ const out=[];for(const line of ORDER)for(let ri=0;ri<LINES[line].routes.length;ri++){const r=LINES[line].routes[ri];for(let i=0;i<r.stops.length-1;i++){const s=r.stops[i];if(mode==="random"&&(memberships[norm(s)]||[]).length!==1)continue;if(mode==="connections"&&(memberships[norm(s)]||[]).length<2)continue;out.push({line,ri,i,current:s,next:r.stops[i+1],terminus:r.stops.at(-1)})}}return out
+}
+const randomPool=specialCandidates("random"),connectionPool=specialCandidates("connections");
+function nextSpecial(){
+ const pool=special.mode==="random"?randomPool:connectionPool;special.q=pool[Math.floor(Math.random()*pool.length)];
+ const q=special.q;$("questionKicker").textContent=special.mode==="random"?"Ligne cachée":"Correspondance";
+ $("questionMain").textContent=q.current;
+ $("questionSub").textContent=special.mode==="random"?"Quelle est la station suivante ?":`Ligne ${q.line} • direction ${q.terminus} → station suivante ?`;
+ $("specialInput").value="";$("specialFeedback").textContent="";$("specialStats").innerHTML=`<span class="status-chip">🔥 Série ${special.streak}</span><span class="status-chip">🏆 Meilleur ${state.specialBest[special.mode]||0}</span>`;$("specialInput").focus()
+}
+function validateSpecial(){
+ const v=$("specialInput").value,q=special.q,fb=$("specialFeedback");if(exactish(v,q.next)){special.score+=100+Math.min(100,special.streak*5);special.streak++;state.score=(state.score||0)+100;state.specialBest[special.mode]=Math.max(state.specialBest[special.mode]||0,special.streak);save();$("specialScore").textContent=special.score;fb.textContent=special.mode==="random"?`✓ Correct — c'était la ligne ${q.line}, direction ${q.terminus}.`:"✓ Correct !";fb.className="feedback good";setTimeout(nextSpecial,700)}
+ else{special.streak=0;fb.textContent=`✕ Non. La réponse était « ${q.next} ».`;fb.className="feedback bad";setTimeout(nextSpecial,1200)}
+}
+
+$("answerForm").addEventListener("submit",e=>{e.preventDefault();if(current.ended)return;const target=current.route.stops[current.index];if(exactish($("answerInput").value,target)){closeSuggestions("main");$("feedback").textContent="✓ Correct !";$("feedback").className="feedback good";setTimeout(()=>correctRoute(false),120)}else wrongRoute()});
+document.querySelectorAll(".hint-btn").forEach(b=>b.onclick=()=>useHint(b.dataset.hint));
+$("specialForm").addEventListener("submit",e=>{e.preventDefault();closeSuggestions("special");validateSpecial()});
+$("backBtn").onclick=showHome;$("specialBack").onclick=showHome;
+$("badgesBtn").onclick=()=>{renderBadges();$("badgesModal").classList.remove("hidden")};$("closeBadges").onclick=()=>$("badgesModal").classList.add("hidden");$("badgesModal").onclick=e=>{if(e.target===$("badgesModal"))$("badgesModal").classList.add("hidden")};
+$("resetBtn").onclick=()=>{if(confirm("Effacer toute la progression, les scores, badges et records ?")){state=freshState();save();showHome();showToast("Progression effacée")}};
+document.querySelectorAll(".mode-card").forEach(b=>b.onclick=()=>{
+ const mode=b.dataset.mode;
+ if(["classic","lives","timed","perfect","duel"].includes(mode)){setModePicker(mode);return}
+ if(mode==="daily"){startDaily();return}
+ if(mode==="random"||mode==="connections"){startSpecial(mode);return}
+ if(mode==="global"){startGlobal()}
+});
+$("p1").addEventListener("input",()=>{$("statusStrip").innerHTML=statusHTML()});$("p2").addEventListener("input",()=>{$("statusStrip").innerHTML=statusHTML()});
+setupAutocomplete("answerInput","answerSuggestions","main");setupAutocomplete("specialInput","specialSuggestions","special");
+showHome();
+</script>
+</body>
+</html>
