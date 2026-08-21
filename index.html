@@ -31,6 +31,8 @@ button,input,select{font:inherit}.hidden{display:none!important}button{cursor:po
 .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.mode-card{text-align:left;padding:16px;color:white;border:1px solid var(--border);background:rgba(16,28,47,.94);border-radius:17px;transition:.18s transform,.18s border-color;min-height:125px}.mode-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.22)}.mode-card.selected{outline:2px solid #60a5fa;background:linear-gradient(180deg,rgba(42,74,114,.7),rgba(16,28,47,.97))}
 .mode-icon{font-size:25px}.mode-card b{display:block;font-size:15px;margin:8px 0 4px}.mode-card span{font-size:12px;color:var(--muted);line-height:1.4}.daily-tag{display:inline-block;margin-top:7px;font-size:10px!important;color:#dbeafe!important;background:rgba(96,165,250,.13);padding:4px 7px;border-radius:999px}
 .line-picker{margin-top:20px}.lines-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.line-card{text-align:left;color:white;background:rgba(16,28,47,.94);border:1px solid var(--border);border-radius:17px;padding:14px;transition:.18s transform,.18s border-color}.line-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.22)}.line-top{display:flex;justify-content:space-between;align-items:center}.line-badge{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:1000;border:3px solid rgba(255,255,255,.92)}.line-card h4{margin:11px 0 3px}.line-card small{color:var(--muted)}.progress{height:7px;border-radius:20px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:10px}.progress i{display:block;height:100%;border-radius:20px}
+.line-card{cursor:pointer}.line-actions{display:flex;align-items:center;gap:8px}.line-reset{border:1px solid var(--border);background:rgba(255,255,255,.05);color:#fecdd3;border-radius:9px;padding:4px 7px;font-size:12px;line-height:1;cursor:pointer}.line-reset:hover{background:rgba(244,63,94,.22);border-color:rgba(244,63,94,.5)}.line-reset:disabled{opacity:.28;cursor:not-allowed}
+.resume-note{display:block;margin-top:8px;font-size:10px;color:#7ee0b8;font-weight:850}.resume-note.empty{color:var(--muted);font-weight:600}
 .global-banner{margin-top:16px;padding:16px}.big-progress{height:13px;background:rgba(255,255,255,.07);border-radius:30px;overflow:hidden;margin-top:10px}.big-progress i{display:block;height:100%;background:linear-gradient(90deg,#60a5fa,#34d399);border-radius:30px}
 .game-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px}.side{padding:17px;align-self:start;position:sticky;top:14px}.side h3{margin:16px 0 4px}.side p{color:var(--muted);font-size:12px;line-height:1.5}.route-list{display:grid;gap:7px;margin-top:13px}.route-btn{border:1px solid var(--border);background:rgba(255,255,255,.035);color:white;border-radius:11px;padding:10px;text-align:left;font-size:11px;font-weight:850}.route-btn.active{outline:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.09)}
 .side-stat{margin-top:14px;padding:12px;border:1px solid var(--border);background:rgba(255,255,255,.035);border-radius:13px}.side-stat b{font-size:18px;display:block}.side-stat span{font-size:10px;color:var(--muted)}
@@ -296,11 +298,12 @@ const CUSTOM_HINTS={
 };
 
 const storeKey="metrochain_v2";
-function freshState(){return {mastered:{},score:0,perfectRuns:0,bestTimed:0,daily:{},dailyHistory:[],duels:0,global:{task:0,index:0,score:0,complete:false},specialBest:{random:0,connections:0}}}
+function freshState(){return {mastered:{},routeProgress:{},score:0,perfectRuns:0,bestTimed:0,daily:{},dailyHistory:[],duels:0,global:{task:0,index:0,score:0,complete:false},specialBest:{random:0,connections:0}}}
 let state;
 try{state=Object.assign(freshState(),JSON.parse(localStorage.getItem(storeKey)||"{}"))}catch{state=freshState()}
 state.global=Object.assign({task:0,index:0,score:0,complete:false},state.global||{});
 state.specialBest=Object.assign({random:0,connections:0},state.specialBest||{});
+state.mastered=state.mastered||{};state.routeProgress=state.routeProgress||{};
 let selectedMode="classic";
 let current={mode:"classic",line:null,baseRoute:null,route:null,index:0,score:0,mistakes:0,lives:3,perfect:true,hints:new Set(),timer:120,timerId:null,ended:false,duelTurn:0,duelScore:[0,0]};
 let special={mode:null,score:0,streak:0,q:null};
@@ -316,6 +319,34 @@ const memberships=membershipsMap();
 function totalLineStops(){return ORDER.reduce((n,l)=>n+uniqueStops(l).length,0)}
 function masteredFor(line){return new Set(state.mastered[line]||[])}
 function linePct(line){const u=uniqueStops(line),g=masteredFor(line);return Math.round(u.filter(s=>g.has(s)).length/u.length*100)}
+// --- Reprise de progression par parcours ---
+const RESUMABLE=["classic","lives"],TRACKED=["classic","lives","perfect","timed"];
+function routeKey(line,idx,rev){return `${line}|${idx}|${rev?1:0}`}
+function routeStops(line,idx,rev){const st=LINES[line].routes[idx].stops;return rev?[...st].reverse():st}
+function derivedIndex(line,idx,rev){const st=routeStops(line,idx,rev),m=masteredFor(line);let i=0;while(i<st.length&&m.has(st[i]))i++;return i}
+function resumeInfo(line,idx,rev){
+ const st=routeStops(line,idx,rev),saved=state.routeProgress[routeKey(line,idx,rev)];
+ const idxSaved=saved&&Number.isFinite(saved.index)?saved.index:0,index=Math.min(st.length,Math.max(idxSaved,derivedIndex(line,idx,rev)));
+ return {index,score:saved&&index===idxSaved?(saved.score||0):0,total:st.length,name:routeName(line,idx,rev)}
+}
+function routeName(line,idx,rev){const r=LINES[line].routes[idx];return rev?`${r.stops.at(-1)} → ${r.stops[0]}`:r.name}
+function bestResume(line){
+ let best=null;
+ LINES[line].routes.forEach((r,i)=>{for(const rev of[false,true]){const info=resumeInfo(line,i,rev);if(info.index>0&&info.index<info.total&&(!best||info.index>best.index))best=Object.assign({routeIndex:i,reverse:rev},info)}});
+ return best
+}
+function lineHasProgress(line){return (state.mastered[line]||[]).length>0||Object.keys(state.routeProgress).some(k=>k.split("|")[0]===line)}
+function clearLineProgress(line){
+ delete state.mastered[line];
+ for(const k of Object.keys(state.routeProgress))if(k.split("|")[0]===line)delete state.routeProgress[k];
+ save()
+}
+function recordRouteProgress(){
+ if(!TRACKED.includes(current.mode))return;
+ const k=routeKey(current.line,current.route.routeIndex,current.route.reverse),prev=state.routeProgress[k];
+ if(prev&&prev.index>=current.index)return;
+ state.routeProgress[k]={index:current.index,score:current.score,at:Date.now()}
+}
 function allUniqueMastered(){const s=new Set();for(const l of ORDER)for(const x of(state.mastered[l]||[]))s.add(norm(x));return s.size}
 function showToast(t){$("toast").textContent=t;$("toast").classList.remove("hidden");clearTimeout(showToast.t);showToast.t=setTimeout(()=>$("toast").classList.add("hidden"),1900)}
 function hashString(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
@@ -353,9 +384,20 @@ function renderStats(){
 }
 function renderLines(){
  const g=$("linesGrid");g.innerHTML="";
- for(const l of ORDER){const d=LINES[l],pct=linePct(l),b=document.createElement("button");b.className="line-card";
- b.innerHTML=`<div class="line-top"><span class="line-badge" style="background:${d.color};color:${d.text||"#fff"}">${l}</span><b>${pct===100?"✅":"›"}</b></div><h4>Ligne ${l}</h4><small>${masteredFor(l).size}/${uniqueStops(l).length} stations • ${d.routes.length>1?d.routes.length+" parcours":"1 parcours"}</small><div class="progress"><i style="width:${pct}%;background:${d.color}"></i></div>`;
- b.onclick=()=>startLineMode(l,selectedMode);g.appendChild(b)}
+ for(const l of ORDER){const d=LINES[l],pct=linePct(l),resume=bestResume(l),hasProg=lineHasProgress(l),b=document.createElement("div");b.className="line-card";b.tabIndex=0;b.setAttribute("role","button");
+ b.innerHTML=`<div class="line-top"><span class="line-badge" style="background:${d.color};color:${d.text||"#fff"}">${l}</span><div class="line-actions"><button class="line-reset" type="button" ${hasProg?"":"disabled"} title="Effacer la progression de la ligne ${l}" aria-label="Effacer la progression de la ligne ${l}">🗑</button><b>${pct===100?"✅":"›"}</b></div></div><h4>Ligne ${l}</h4><small>${masteredFor(l).size}/${uniqueStops(l).length} stations • ${d.routes.length>1?d.routes.length+" parcours":"1 parcours"}</small><div class="progress"><i style="width:${pct}%;background:${d.color}"></i></div><small class="resume-note${resume?"":" empty"}">${resume?`⏯ Reprise : ${resume.index}/${resume.total} • ${resume.name}`:"Aucune reprise en cours"}</small>`;
+ const play=()=>{const r=RESUMABLE.includes(selectedMode)?resume:null;startLineMode(l,selectedMode,r?r.routeIndex:0,r?r.reverse:false)};
+ b.onclick=play;b.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();play()}};
+ b.querySelector(".line-reset").onclick=e=>{e.stopPropagation();askClearLine(l)};
+ g.appendChild(b)}
+}
+function askClearLine(line,after){
+ if(!lineHasProgress(line)){showToast("Aucune progression à effacer sur la ligne "+line);return false}
+ if(!confirm(`Effacer la progression de la ligne ${line} ?
+Les stations trouvées et les reprises de parcours de cette ligne seront supprimées.`))return false;
+ clearLineProgress(line);showToast(`Progression de la ligne ${line} effacée`);
+ if(after)after();else{renderStats();renderLines()}
+ return true
 }
 function setModePicker(mode){
  selectedMode=mode;document.querySelectorAll(".mode-card").forEach(b=>b.classList.toggle("selected",b.dataset.mode===mode));
@@ -366,10 +408,14 @@ function showHome(){
 }
 function hideAll(){ $("home").classList.add("hidden");$("game").classList.add("hidden");$("special").classList.add("hidden") }
 function cloneRoute(line,idx,reverse=false){const r=LINES[line].routes[idx];return {id:r.id+(reverse?"-rev":""),baseId:r.id,name:reverse?`${r.stops.at(-1)} → ${r.stops[0]}`:r.name,stops:reverse?[...r.stops].reverse():[...r.stops],routeIndex:idx,reverse}}
-function startLineMode(line,mode,routeIndex=0,reverse=false){
+function startLineMode(line,mode,routeIndex=0,reverse=false,fresh=false){
  stopTimer();hideAll();$("game").classList.remove("hidden");
  current={mode,line,baseRoute:LINES[line].routes[routeIndex],route:cloneRoute(line,routeIndex,reverse),index:0,score:0,mistakes:0,lives:3,perfect:true,hints:new Set(),timer:120,timerId:null,ended:false,duelTurn:0,duelScore:[0,0]};
  if(mode==="duel")current.index=1;
+ else if(!fresh&&RESUMABLE.includes(mode)){
+  const info=resumeInfo(line,routeIndex,reverse);
+  if(info.index>0&&info.index<info.total){current.index=info.index;current.score=info.score;showToast(`⏯ Progression reprise : ${info.index}/${info.total} stations`)}
+ }
  renderGameShell();renderGame();
  if(mode==="timed")startTimer();
  setTimeout(()=>$("answerInput").focus(),70)
@@ -394,11 +440,16 @@ function renderRoutes(){
  if(["daily","global"].includes(current.mode)){const x=document.createElement("div");x.className="route-btn active";x.textContent=current.route.name;box.appendChild(x);return}
  LINES[current.line].routes.forEach((r,i)=>{
    for(const rev of [false,true]){
+     const info=resumeInfo(current.line,i,rev);
      const b=document.createElement("button");b.className="route-btn"+(current.route.routeIndex===i&&current.route.reverse===rev?" active":"");
-     b.textContent=(rev?"← ":"→ ")+(rev?`${r.stops.at(-1)} → ${r.stops[0]}`:r.name);
+     b.innerHTML=`${rev?"← ":"→ "}${routeName(current.line,i,rev)}<br><span style="color:var(--muted);font-weight:600">${info.index>=info.total?"✅ terminé":`${info.index}/${info.total} stations`}</span>`;
      b.onclick=()=>startLineMode(current.line,current.mode,i,rev);box.appendChild(b)
    }
- })
+ });
+ const line=current.line,wipe=document.createElement("button");wipe.className="btn bad ghost";wipe.style.marginTop="10px";wipe.style.width="100%";wipe.style.fontSize="11px";
+ wipe.textContent="🗑 Effacer la progression de la ligne "+line;
+ wipe.onclick=()=>askClearLine(line,()=>{const ri=current.route.routeIndex,rev=current.route.reverse;startLineMode(line,current.mode,ri,rev,true)});
+ box.appendChild(wipe)
 }
 function statusHTML(){
  const s=[];s.push(`<span class="status-chip">${current.mode==="daily"?"🔥 Métro du jour":MODE_INFO[current.mode]?.[0]||current.mode}</span>`);
@@ -448,7 +499,7 @@ function correctRoute(revealed=false){
  if(current.mode==="duel"){current.duelScore[current.duelTurn]++;current.duelTurn=1-current.duelTurn}
  current.index++;current.mistakes=0;current.hints=new Set();
  if(current.mode==="global"){state.global.index=current.index;state.global.score=current.score}
- save();
+ recordRouteProgress();save();
  if(current.index>=current.route.stops.length)finishRoute();else renderGame()
 }
 function wrongRoute(){
@@ -476,7 +527,7 @@ function renderEnd(){
  if(current.mode==="global"&&state.global.complete){emoji="🌍";title="Tout le métro terminé !";text=`Tu as terminé la gigantesque Partie globale. Score cumulé : ${state.global.score} points.`}
  $("endEmoji").textContent=emoji;$("endTitle").textContent=title;$("endText").textContent=text;
  const home=document.createElement("button");home.className="btn";home.textContent="← Accueil";home.onclick=showHome;actions.appendChild(home);
- if(!["global"].includes(current.mode)){const replay=document.createElement("button");replay.className="btn";replay.textContent="Rejouer";replay.onclick=()=>startLineMode(current.line,current.mode,current.route.routeIndex,current.route.reverse);actions.appendChild(replay)}
+ if(!["global"].includes(current.mode)){const replay=document.createElement("button");replay.className="btn";replay.textContent="Rejouer";replay.onclick=()=>startLineMode(current.line,current.mode,current.route.routeIndex,current.route.reverse,true);actions.appendChild(replay)}
  if(current.mode==="daily"){const share=document.createElement("button");share.className="btn";share.textContent="📤 Partager mon score";share.onclick=shareDaily;actions.appendChild(share)}
 }
 function startTimer(){
@@ -603,6 +654,7 @@ async function syncFromCloud(){
    state=Object.assign(freshState(),data.progress);
    state.global=Object.assign({task:0,index:0,score:0,complete:false},state.global||{});
    state.specialBest=Object.assign({random:0,connections:0},state.specialBest||{});
+   state.mastered=state.mastered||{};state.routeProgress=state.routeProgress||{};
    localStorage.setItem(storeKey,JSON.stringify(state))
   } else {
    cloudReady=true;await pushToCloud()
