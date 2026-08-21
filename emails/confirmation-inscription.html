@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light only">
+<title>Confirme ton adresse MetroChain</title>
+</head>
+<body style="margin:0;padding:0;background:#eef2f7;">
+<!-- MétroChain — template Supabase « Confirm signup »
+     Variables disponibles : {{ .ConfirmationURL }} {{ .Email }} {{ .SiteURL }} {{ .Token }}
+     Voir emails/README.md pour l'installation. -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0;padding:0;background:#eef2f7;">
+  <tr>
+    <td align="center" style="padding:32px 12px;font-family:Helvetica,Arial,sans-serif;">
+
+      <!-- preheader masqué -->
+      <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Un clic et ta progression te suit sur tous tes appareils.</div>
+
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%;background:#ffffff;border:1px solid #dce4ef;border-radius:20px;overflow:hidden;">
+
+        <!-- bandeau de lignes -->
+        <tr>
+          <td style="padding:0;font-size:0;line-height:0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td width="12%" height="7" style="background:#FFCD00;font-size:0;line-height:0;">&nbsp;</td>
+                <td width="12%" height="7" style="background:#003CA6;font-size:0;line-height:0;">&nbsp;</td>
+                <td width="13%" height="7" style="background:#CF009E;font-size:0;line-height:0;">&nbsp;</td>
+                <td width="13%" height="7" style="background:#FF7E2E;font-size:0;line-height:0;">&nbsp;</td>
+                <td width="12%" height="7" style="background:#6ECA97;font-size:0;line-height:0;">&nbsp;</td>
+                <td width="13%" height="7" style="background:#6EC4E8;font-size:0;line-height:0;">&nbsp;</td>
+                <td width="13%" height="7" style="background:#007852;font-size:0;line-height:0;">&nbsp;</td>
+                <td width="12%" height="7" style="background:#62259D;font-size:0;line-height:0;">&nbsp;</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- en-tête : logo + nom -->
+        <tr>
+          <td style="padding:30px 34px 8px 34px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td width="56" style="width:56px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="56" style="width:56px;height:56px;background:#101c2c;border-radius:16px;">
+                    <tr>
+                      <td align="center" valign="middle" height="56" style="height:56px;color:#ffffff;font-family:'Arial Black',Helvetica,Arial,sans-serif;font-size:30px;font-weight:900;line-height:56px;letter-spacing:-1px;">M</td>
+                    </tr>
+                  </table>
+                </td>
+                <td style="padding-left:14px;">
+                  <div style="font-size:20px;font-weight:bold;color:#0e1b2c;letter-spacing:-0.5px;">MétroChain</div>
+                  <div style="font-size:12px;color:#5f7288;padding-top:3px;">Le quiz du métro parisien</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- corps -->
+        <tr>
+          <td style="padding:18px 34px 0 34px;">
+            <h1 style="margin:0 0 12px 0;font-size:29px;line-height:1.15;color:#0e1b2c;letter-spacing:-1px;">Bienvenue à bord.</h1>
+            <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#41546d;">
+              Il reste une station avant le terminus : confirme ton adresse pour activer ton compte
+              et garder ta progression sur tous tes appareils.
+            </p>
+          </td>
+        </tr>
+
+        <!-- bouton -->
+        <tr>
+          <td align="center" style="padding:14px 34px 6px 34px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="center" style="background:#2563eb;border-radius:13px;">
+                  <a href="{{ .ConfirmationURL }}"
+                     style="display:inline-block;padding:15px 30px;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:13px;">
+                    Confirmer mon adresse
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:14px 34px 0 34px;">
+            <p style="margin:0;font-size:12px;line-height:1.6;color:#8b9cb2;">
+              Le bouton ne fonctionne pas ? Copie ce lien dans ton navigateur :<br>
+              <a href="{{ .ConfirmationURL }}" style="color:#2563eb;word-break:break-all;">{{ .ConfirmationURL }}</a>
+            </p>
+          </td>
+        </tr>
+
+        <!-- ce que débloque le compte -->
+        <tr>
+          <td style="padding:24px 34px 0 34px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f7fb;border:1px solid #dce4ef;border-radius:14px;">
+              <tr>
+                <td style="padding:16px 18px;">
+                  <div style="font-size:11px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;color:#6c8098;padding-bottom:10px;">Ce que ça débloque</div>
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;line-height:1.5;color:#41546d;">
+                    <tr>
+                      <td width="22" valign="top" style="color:#003CA6;font-weight:bold;">›</td>
+                      <td style="padding-bottom:7px;">Ta progression ligne par ligne, reprise là où tu t'es arrêté</td>
+                    </tr>
+                    <tr>
+                      <td width="22" valign="top" style="color:#CF009E;font-weight:bold;">›</td>
+                      <td style="padding-bottom:7px;">Tes badges, tes Perfect Runs et tes records de chrono</td>
+                    </tr>
+                    <tr>
+                      <td width="22" valign="top" style="color:#007852;font-weight:bold;">›</td>
+                      <td>L'historique de tes Métros du jour, synchronisé entre appareils</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- pied -->
+        <tr>
+          <td style="padding:24px 34px 30px 34px;">
+            <p style="margin:0 0 10px 0;font-size:12px;line-height:1.6;color:#8b9cb2;">
+              Ce lien expire dans 24 heures. Tu n'as pas créé de compte MétroChain ?
+              Ignore simplement cet email, rien ne sera activé.
+            </p>
+            <p style="margin:0;font-size:11px;line-height:1.6;color:#a3b1c4;border-top:1px solid #e8eef7;padding-top:14px;">
+              MétroChain — projet personnel non officiel, sans lien avec la RATP ou Île-de-France Mobilités.
+              Aucune donnée personnelle n'est revendue.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+
+      <div style="font-size:11px;color:#a3b1c4;padding-top:16px;font-family:Helvetica,Arial,sans-serif;">
+        Envoyé à {{ .Email }}
+      </div>
+
+    </td>
+  </tr>
+</table>
+</body>
+</html>
