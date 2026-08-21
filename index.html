@@ -18,7 +18,10 @@ button,input,select{font:inherit}.hidden{display:none!important}button{cursor:po
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}
 .brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:16px;background:white;color:#10203a;display:grid;place-items:center;font-size:23px;font-weight:1000;box-shadow:var(--shadow)}
 .brand h1{margin:0;font-size:22px;letter-spacing:-.04em}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
-.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--border);background:var(--panel2);color:white;padding:10px 13px;border-radius:12px;font-weight:850}.btn:hover{filter:brightness(1.12)}.btn.ghost{background:transparent}.btn.bad{color:#fecdd3}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.btn{border:1px solid var(--border);background:var(--panel2);color:white;padding:10px 13px;border-radius:12px;font-weight:850}.btn:hover{filter:brightness(1.12)}.btn.ghost{background:transparent}.btn.bad{color:#fecdd3}
+.auth-status{display:flex;align-items:center;gap:8px}
+.auth-form{display:grid;gap:10px;margin-top:14px}
+.auth-switch{text-align:center;margin-top:8px;font-size:12px;color:var(--muted)}
 .card{background:linear-gradient(180deg,rgba(20,36,59,.97),rgba(13,25,43,.97));border:1px solid var(--border);border-radius:21px;box-shadow:var(--shadow)}
 .hero{display:grid;grid-template-columns:1.45fr .55fr;gap:16px}.hero-main{padding:28px;position:relative;overflow:hidden}.hero-main:after{content:"M";position:absolute;right:-10px;bottom:-65px;font-size:210px;font-weight:1000;color:rgba(255,255,255,.035)}
 .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:#a9bbd3;font-weight:950}.hero h2{font-size:38px;line-height:1.05;letter-spacing:-.055em;margin:8px 0 13px}.hero p{line-height:1.55;color:var(--muted);max-width:760px}.hero-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}
@@ -52,7 +55,7 @@ button,input,select{font:inherit}.hidden{display:none!important}button{cursor:po
 <div class="app">
 <header class="topbar">
   <div class="brand"><div class="logo">M</div><div><h1>MétroChain V2</h1><p>Trouve le métro parisien station après station.</p></div></div>
-  <div class="actions"><button class="btn ghost" id="badgesBtn">🏆 Badges</button><button class="btn ghost bad" id="resetBtn">Réinitialiser</button></div>
+  <div class="actions"><div class="auth-status" id="authStatus"></div><button class="btn ghost" id="badgesBtn">🏆 Badges</button><button class="btn ghost bad" id="resetBtn">Réinitialiser</button></div>
 </header>
 
 <main id="home">
@@ -153,6 +156,19 @@ button,input,select{font:inherit}.hidden{display:none!important}button{cursor:po
 </section>
 </main>
 
+<div class="modal-wrap hidden" id="authModal">
+ <div class="card modal" style="max-width:420px">
+  <div class="modal-head"><h2 id="authModalTitle">Connexion</h2><button class="btn ghost" id="closeAuth" type="button">✕</button></div>
+  <p style="color:var(--muted);font-size:12px;margin-top:6px">Connecte-toi pour garder ton historique et ta progression, quel que soit l'appareil.</p>
+  <form class="auth-form" id="authForm">
+   <input class="name-input" type="email" id="authEmail" placeholder="Adresse email" autocomplete="email" required>
+   <input class="name-input" type="password" id="authPassword" placeholder="Mot de passe (6 caractères min.)" autocomplete="current-password" minlength="6" required>
+   <button class="primary" type="submit" id="authSubmitBtn" style="--line:#60a5fa;background:#60a5fa;color:#081421;padding:14px">Se connecter</button>
+  </form>
+  <div class="feedback" id="authFeedback"></div>
+  <div class="auth-switch"><span id="authSwitchText">Pas encore de compte ?</span> <button class="btn ghost" id="authSwitchBtn" type="button" style="padding:4px 8px">Créer un compte</button></div>
+ </div>
+</div>
 <div class="modal-wrap hidden" id="badgesModal">
  <div class="card modal"><div class="modal-head"><h2>🏆 Mes badges</h2><button class="btn ghost" id="closeBadges">✕</button></div><div class="badges-grid" id="badgesGrid"></div></div>
 </div>
@@ -161,6 +177,10 @@ button,input,select{font:inherit}.hidden{display:none!important}button{cursor:po
 </div>
 
 <script>
+const SUPABASE_URL="https://ziipyiwsxefecwjwqjnw.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_gQoBoEaPj4kQBWclBx-sgg_neSYW6f7";
+let supabase=null;
+
 const LINES = {
 "1":{color:"#FFCD00",text:"#15223a",routes:[
  {id:"main",name:"La Défense → Château de Vincennes",stops:["La Défense – Grande Arche","Esplanade de La Défense","Pont de Neuilly","Les Sablons","Porte Maillot","Argentine","Charles de Gaulle – Étoile","George V","Franklin D. Roosevelt","Champs-Élysées – Clemenceau","Concorde","Tuileries","Palais Royal – Musée du Louvre","Louvre – Rivoli","Châtelet","Hôtel de Ville","Saint-Paul","Bastille","Gare de Lyon","Reuilly – Diderot","Nation","Porte de Vincennes","Saint-Mandé","Bérault","Château de Vincennes"]}]},
@@ -287,7 +307,7 @@ let special={mode:null,score:0,streak:0,q:null};
 let ac={main:{items:[],index:-1},special:{items:[],index:-1}};
 
 const $=id=>document.getElementById(id);
-function save(){localStorage.setItem(storeKey,JSON.stringify(state))}
+function save(){localStorage.setItem(storeKey,JSON.stringify(state));scheduleCloudPush()}
 function norm(s){return(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/œ/g,"oe").replace(/æ/g,"ae").replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ")}
 function uniqueStops(line){return [...new Set(LINES[line].routes.flatMap(r=>r.stops))]}
 const ALL_STATIONS=[...new Set(ORDER.flatMap(uniqueStops))].sort((a,b)=>a.localeCompare(b,"fr"));
@@ -530,6 +550,104 @@ function validateSpecial(){
  const v=$("specialInput").value,q=special.q,fb=$("specialFeedback");if(exactish(v,q.next)){special.score+=100+Math.min(100,special.streak*5);special.streak++;state.score=(state.score||0)+100;state.specialBest[special.mode]=Math.max(state.specialBest[special.mode]||0,special.streak);save();$("specialScore").textContent=special.score;fb.textContent=special.mode==="random"?`✓ Correct — c'était la ligne ${q.line}, direction ${q.terminus}.`:"✓ Correct !";fb.className="feedback good";setTimeout(nextSpecial,700)}
  else{special.streak=0;fb.textContent=`✕ Non. La réponse était « ${q.next} ».`;fb.className="feedback bad";setTimeout(nextSpecial,1200)}
 }
+
+// --- Authentification email / mot de passe (Supabase) + historique cloud ---
+// Le service en ligne est chargé de façon paresseuse et non bloquante : si le
+// CDN ou le réseau est indisponible, le jeu continue de fonctionner 100% en local.
+let session=null,authMode="signin",pushTimer=null,cloudReady=false;
+const AUTH_ERRORS={
+ "Invalid login credentials":"Email ou mot de passe incorrect.",
+ "User already registered":"Un compte existe déjà avec cet email.",
+ "Password should be at least 6 characters":"Le mot de passe doit contenir au moins 6 caractères.",
+ "Unable to validate email address: invalid format":"Adresse email invalide.",
+ "Email not confirmed":"Confirme d'abord ton adresse email via le lien reçu par mail."
+};
+function translateAuthError(msg){return AUTH_ERRORS[msg]||msg||"Une erreur est survenue."}
+function renderAuthUI(){
+ const box=$("authStatus");box.innerHTML="";
+ if(session){
+  const tag=document.createElement("span");tag.className="pill";tag.textContent="👤 "+session.user.email;box.appendChild(tag);
+  const out=document.createElement("button");out.className="btn ghost";out.textContent="Déconnexion";out.onclick=signOutUser;box.appendChild(out)
+ } else {
+  const btn=document.createElement("button");btn.className="btn";btn.textContent="🔐 Se connecter";btn.onclick=openAuth;box.appendChild(btn)
+ }
+}
+function openAuth(){
+ if(!supabase){showToast("Connexion indisponible hors ligne. Réessaie plus tard.");return}
+ setAuthMode("signin");$("authModal").classList.remove("hidden");setTimeout(()=>$("authEmail").focus(),30)
+}
+function closeAuthModal(){$("authModal").classList.add("hidden");$("authForm").reset();$("authFeedback").textContent="";$("authFeedback").className="feedback"}
+function setAuthMode(mode){
+ authMode=mode;$("authFeedback").textContent="";$("authFeedback").className="feedback";
+ $("authModalTitle").textContent=mode==="signin"?"Connexion":"Créer un compte";
+ $("authSubmitBtn").textContent=mode==="signin"?"Se connecter":"Créer mon compte";
+ $("authSwitchText").textContent=mode==="signin"?"Pas encore de compte ?":"Déjà un compte ?";
+ $("authSwitchBtn").textContent=mode==="signin"?"Créer un compte":"Se connecter"
+}
+async function signUpUser(email,password){const {data,error}=await supabase.auth.signUp({email,password});if(error)throw error;return data}
+async function signInUser(email,password){const {error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error}
+async function signOutUser(){if(!supabase)return;await supabase.auth.signOut();session=null;renderAuthUI();showToast("Déconnecté")}
+function scheduleCloudPush(){if(!supabase||!session||!cloudReady)return;clearTimeout(pushTimer);pushTimer=setTimeout(pushToCloud,900)}
+async function pushToCloud(){
+ if(!supabase||!session)return;
+ try{await supabase.from("user_progress").upsert({id:session.user.id,progress:state,updated_at:new Date().toISOString()})}
+ catch(err){console.error("Sync cloud impossible :",err)}
+}
+async function syncFromCloud(){
+ if(!supabase||!session)return;
+ cloudReady=false;
+ try{
+  const {data,error}=await supabase.from("user_progress").select("progress").eq("id",session.user.id).maybeSingle();
+  if(error)throw error;
+  if(data&&data.progress&&Object.keys(data.progress).length){
+   state=Object.assign(freshState(),data.progress);
+   state.global=Object.assign({task:0,index:0,score:0,complete:false},state.global||{});
+   state.specialBest=Object.assign({random:0,connections:0},state.specialBest||{});
+   localStorage.setItem(storeKey,JSON.stringify(state))
+  } else {
+   cloudReady=true;await pushToCloud()
+  }
+ }catch(err){console.error("Chargement cloud impossible :",err)}
+ cloudReady=true;
+ if(!$("home").classList.contains("hidden"))showHome()
+}
+$("closeAuth").onclick=closeAuthModal;
+$("authModal").onclick=e=>{if(e.target===$("authModal"))closeAuthModal()};
+$("authSwitchBtn").onclick=()=>setAuthMode(authMode==="signin"?"signup":"signin");
+$("authForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(!supabase){closeAuthModal();showToast("Connexion indisponible hors ligne.");return}
+ const email=$("authEmail").value.trim(),password=$("authPassword").value,fb=$("authFeedback"),btn=$("authSubmitBtn");
+ fb.textContent="Un instant…";fb.className="feedback warn";btn.disabled=true;
+ try{
+  if(authMode==="signin"){await signInUser(email,password);closeAuthModal();showToast("Connecté ✓")}
+  else{
+   const data=await signUpUser(email,password);
+   if(data.session){closeAuthModal();showToast("Compte créé ✓")}
+   else{fb.textContent="Compte créé. Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi.";fb.className="feedback good"}
+  }
+ }catch(err){fb.textContent=translateAuthError(err.message);fb.className="feedback bad"}
+ finally{btn.disabled=false}
+});
+renderAuthUI();
+async function initAuth(){
+ let mod;
+ try{mod=await import("https://esm.sh/@supabase/supabase-js@2")}
+ catch(err){console.warn("Service de connexion indisponible (CDN injoignable) : le jeu continue en local.",err);return}
+ try{
+  supabase=mod.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  const {data:{session:s}}=await supabase.auth.getSession();
+  session=s;renderAuthUI();
+  supabase.auth.onAuthStateChange((_event,s2)=>{
+   const changed=(s2?.user?.id)!==(session?.user?.id);
+   session=s2;renderAuthUI();
+   if(session&&changed)syncFromCloud();
+   if(!session)cloudReady=false
+  });
+  if(session)await syncFromCloud()
+ }catch(err){console.warn("Initialisation du compte impossible :",err)}
+}
+initAuth();
 
 $("answerForm").addEventListener("submit",e=>{e.preventDefault();if(current.ended)return;const target=current.route.stops[current.index];if(exactish($("answerInput").value,target)){closeSuggestions("main");$("feedback").textContent="✓ Correct !";$("feedback").className="feedback good";setTimeout(()=>correctRoute(false),120)}else wrongRoute()});
 document.querySelectorAll(".hint-btn").forEach(b=>b.onclick=()=>useHint(b.dataset.hint));
